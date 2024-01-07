@@ -1,6 +1,6 @@
 class Statistic extends Drawable {
   constructor(label, row, col) {
-    super(label, row, col)
+    super(label, row, col);
     this.cumulativeValue = 0;
     this.count = 0;
   }
@@ -31,7 +31,7 @@ class Statistic extends Drawable {
 
     // The data in the statistics array are always being updated.
     // So, here we update the text in the labels with the updated information.
-    allstatistics.selectAll("text").text(function(d) {
+    allstatistics.selectAll("text").text(function (d) {
       var avgLengthOfStay = d.cumulativeValue / Math.max(1, d.count); // cumulativeValue and count for each statistic are always changing
       return d.label + avgLengthOfStay.toFixed(1);
     }); //The toFixed() function sets the number of decimal places to display

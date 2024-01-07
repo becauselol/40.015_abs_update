@@ -6,21 +6,41 @@ function getLocationCell(row, col, cellWidth, cellHeight) {
 }
 
 function getCellX(d) {
-  var cell = getLocationCell(d.row, d.col, d.constructor.cellWidth, d.constructor.cellHeight);
+  var cell = getLocationCell(
+    d.row,
+    d.col,
+    d.constructor.cellWidth,
+    d.constructor.cellHeight,
+  );
   return cell.x + "px";
 }
 
 function getCellY(d) {
-  var cell = getLocationCell(d.row, d.col, d.constructor.cellWidth, d.constructor.cellHeight);
+  var cell = getLocationCell(
+    d.row,
+    d.col,
+    d.constructor.cellWidth,
+    d.constructor.cellHeight,
+  );
   return cell.y + "px";
 }
 
 function getCellXLabel(d) {
-  var cell = getLocationCell(d.row, d.col, d.constructor.cellWidth, d.constructor.cellHeight);
+  var cell = getLocationCell(
+    d.row,
+    d.col,
+    d.constructor.cellWidth,
+    d.constructor.cellHeight,
+  );
   return cell.x + d.constructor.cellWidth + "px";
 }
 
 function getCellYLabel(d) {
-  var cell = getLocationCell(d.row, d.col, d.constructor.cellWidth, d.constructor.cellHeight);
+  var cell = getLocationCell(
+    d.row,
+    d.col,
+    d.constructor.cellWidth,
+    d.constructor.cellHeight,
+  );
   return cell.y + d.constructor.cellHeight / 2 + "px";
 }

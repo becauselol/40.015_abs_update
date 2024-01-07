@@ -1,6 +1,6 @@
 class Area extends Drawable {
   constructor(label, startRow, numRows, startCol, numCols, colour) {
-    super(label, startRow, startCol)
+    super(label, startRow, startCol);
     this.startRow = startRow;
     this.startCol = startCol;
     this.numRows = numRows;
@@ -15,19 +15,19 @@ class Area extends Drawable {
     // For each new area, append a rectangle to the group
     newareas
       .append("rect")
-      .attr("x", function(d) {
+      .attr("x", function (d) {
         return (d.startCol - 1) * d.constructor.cellWidth;
       })
-      .attr("y", function(d) {
+      .attr("y", function (d) {
         return (d.startRow - 1) * d.constructor.cellHeight;
       })
-      .attr("width", function(d) {
+      .attr("width", function (d) {
         return d.numCols * d.constructor.cellWidth;
       })
-      .attr("height", function(d) {
+      .attr("height", function (d) {
         return d.numRows * d.constructor.cellWidth;
       })
-      .style("fill", function(d) {
+      .style("fill", function (d) {
         return d.colour;
       })
       .style("stroke", "black")

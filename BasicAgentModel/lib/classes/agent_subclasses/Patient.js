@@ -57,7 +57,7 @@ class Patient extends Agent {
     // determine if this has arrived at destination
     var hasArrived =
       Math.abs(patient.target.row - patient.row) +
-      Math.abs(patient.target.col - patient.col) ==
+        Math.abs(patient.target.col - patient.col) ==
       0;
 
     // Behavior of patient depends on his or her state
@@ -195,7 +195,7 @@ class Patient extends Agent {
       .attr("y", getCellY)
       .attr("width", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
       .attr("height", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
-      .attr("xlink:href", function(d) {
+      .attr("xlink:href", function (d) {
         if (d.type == "A") return d.urlPatientA;
         else return d.urlPatientB;
       });
@@ -208,7 +208,8 @@ class Patient extends Agent {
     var images = allpatients.selectAll("image");
     // Next we define a transition for each of these image elements.
     // Note that we only need to update the attributes of the image element which change
-    images.transition()
+    images
+      .transition()
       .attr("x", getCellX)
       .attr("y", getCellY)
       .duration(Drawable.animationDelay)

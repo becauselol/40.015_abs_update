@@ -28,7 +28,7 @@ class Caregiver extends Agent {
       .attr("y", getCellY)
       .attr("width", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
       .attr("height", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
-      .attr("xlink:href", function(d) {
+      .attr("xlink:href", function (d) {
         if (d.label == "Doctor") return d.urlDoctor1;
         else return d.urlReceptionist;
       });
@@ -39,7 +39,7 @@ class Caregiver extends Agent {
       .attr("x", getCellXLabel)
       .attr("y", getCellYLabel)
       .attr("dy", ".35em")
-      .text(function(d) {
+      .text(function (d) {
         return d.label;
       });
   }
