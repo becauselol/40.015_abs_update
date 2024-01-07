@@ -19,6 +19,12 @@ class Patient extends Agent {
   // This version of the simulation makes no difference between A and B patients except for the display image
   // Later assignments can build on this basic structure.
   static probTypeA = 0.5;
+  // To manage the queues, we need to keep track of patientIDs.
+  static nextID_A = 0; // increment this and assign it to the next admitted patient of type A
+  static nextID_B = 0; // increment this and assign it to the next admitted patient of type B
+  static nextTreatedID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
+  static nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
+
   constructor(label, row, col, type, receptionistRow, receptionistCol) {
     super(label, row, col, PatientState.UNTREATED)
     this.type = type
@@ -33,11 +39,14 @@ class Patient extends Agent {
     this.urlPatientB = "images/People-Patient-Male-icon.png";
   }
 
-  isNotExited() {
-    return this.state != PatientState.EXITED;
+  notExited() {
+    return !this.exited();
+  }
+  exited() {
+    return this.state == PatientState.EXITED;
   }
 
-  static updatePatient(currentTime, patient, doctor, receptionist, waitingRoom) {
+  static updatePatient(currentTime, patient, doctor, receptionist, waitingRoom, statistics, maxCols) {
     // determine if this has arrived at destination
     var hasArrived = (Math.abs(patient.target.row - patient.row) + Math.abs(patient.target.col - patient.col)) == 0;
 
@@ -51,30 +60,30 @@ class Patient extends Agent {
           patient.target.row = waitingRoom.startRow + Math.floor(Math.random() * waitingRoom.numRows);
           patient.target.col = waitingRoom.startCol + Math.floor(Math.random() * waitingRoom.numCols);
           // receptionist assigns a sequence number to each patient to govern order of treatment
-          if (patient.type == "A") patient.id = ++this.nextPatientID_A;
-          else patient.id = ++this.nextPatientID_B;
+          if (patient.type == "A") patient.id = ++Patient.nextID_A;
+          else patient.id = ++Patient.nextID_B;
         }
         break;
       case PatientState.WAITING:
         switch (patient.type) {
           case "A":
-            if (patient.id == this.nextTreatedPatientID_A) {
+            if (patient.id == Patient.nextTreatedID_A) {
               patient.target.row = doctor.row - 1;
               patient.target.col = doctor.col - 1;
               patient.state = PatientState.STAGING;
             }
-            if (patient.id == this.nextTreatedPatientID_A + 1) {
+            if (patient.id == Patient.nextTreatedID_A + 1) {
               patient.target.row = doctor.row - 1;
               patient.target.col = doctor.col - 2;
             }
             break;
           case "B":
-            if (patient.id == this.nextTreatedPatientID_B) {
+            if (patient.id == Patient.nextTreatedID_B) {
               patient.target.row = doctor.row - 1;
               patient.target.col = doctor.col + 1;
               patient.state = PatientState.STAGING;
             }
-            if (patient.id == this.nextTreatedPatientID_B + 1) {
+            if (patient.id == Patient.nextTreatedID_B + 1) {
               patient.target.row = doctor.row - 1;
               patient.target.col = doctor.col + 2;
             }
@@ -92,13 +101,13 @@ class Patient extends Agent {
             patient.state = PatientState.INTREATMENT;
             patient.target.row = doctor.row;
             patient.target.col = doctor.col;
-            if (patient.type == "A") this.nextTreatedpatientID_A++; else this.nextTreatedpatientID_B++;
+            if (patient.type == "A") Patient.nextTreatedID_A++; else Patient.nextTreatedID_B++;
           }
         }
         break;
       case PatientState.INTREATMENT:
         // Complete treatment randomly according to the probability of departure
-        if (Math.random() < this.probDeparture) {
+        if (Math.random() < Patient.probDeparture) {
           patient.state = PatientState.TREATED;
           doctor.state = DoctorState.IDLE;
           patient.target.row = receptionist.row;
@@ -109,14 +118,14 @@ class Patient extends Agent {
         if (hasArrived) {
           patient.state = PatientState.DISCHARGED;
           patient.target.row = 1;
-          patient.target.col = this.maxCols;
+          patient.target.col = maxCols;
           // compute statistics for discharged patient
           var timeInClinic = this.currentTime - patient.timeAdmitted;
           var stats;
           if (patient.type == "A") {
-            stats = this.statistics[0];
+            stats = statistics[0];
           } else {
-            stats = this.statistics[1];
+            stats = statistics[1];
           }
           stats.cumulativeValue = stats.cumulativeValue + timeInClinic;
           stats.count = stats.count + 1;
@@ -189,8 +198,9 @@ class Patient extends Agent {
 
     // We need to remove patients who have been discharged. 
     //Select all the svg groups of class "patient" whose state is EXITED
-    var treatedpatients = allpatients.filter(function(d, i) { return d.state == PatientState.EXITED; });
+    // allpatients.exit().remove()
+    // var treatedpatients = allpatients.filter(function(d, i) { return d.exited(); });
     // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
-    treatedpatients.remove();
+    // treatedpatients.remove();
   }
 }

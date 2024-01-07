@@ -38,13 +38,14 @@ function toggleSimStep() {
 }
 
 function redrawWindow() {
+  simTimer = window.setInterval(simStep, animationDelay); // call the function simStep every animationDelay milliseconds
+  animationDelay = 550 - document.getElementById("slider1").value;
   sim.redrawSim(window, document, animationDelay);
 }
 
 function simStep() {
   if (sim.isRunning) {
     sim.simStep();
-    sim.drawSim();
   }
 }
 

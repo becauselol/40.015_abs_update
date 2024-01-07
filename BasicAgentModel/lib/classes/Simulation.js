@@ -57,20 +57,15 @@ class Simulation {
     // Simulation specific
 
 
-    // To manage the queues, we need to keep track of patientIDs.
-    this.nextPatientID_A = 0; // increment this and assign it to the next admitted patient of type A
-    this.nextPatientID_B = 0; // increment this and assign it to the next admitted patient of type B
-    this.nextTreatedPatientID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
-    this.nextTreatedPatientID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
 
     this.initializeSim(window, document)
   }
 
   initializeSim(window, document) {
-    this.nextPatientID_A = 0; // increment this and assign it to the next entering patient of type A
-    this.nextPatientID_B = 0; // increment this and assign it to the next entering patient of type B
-    this.nextTreatedPatientID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
-    this.nextTreatedPatientID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
+    Patient.nextID_A = 0; // increment this and assign it to the next entering patient of type A
+    Patient.nextID_B = 0; // increment this and assign it to the next entering patient of type B
+    Patient.nextTreatedID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
+    Patient.nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
     this.currentTime = 0;
     this.doctor.state = DoctorState.IDLE;
     this.statistics[0].cumulativeValue = 0;
@@ -133,15 +128,22 @@ class Simulation {
   updateDynamicAgents() {
     // loop over all the agents and update their states
     for (var patient of this.patients) {
-      Patient.updatePatient(this.currentTime, patient, this.doctor, this.receptionist, this.waitingRoom)
+      Patient.updatePatient(this.currentTime, patient, this.doctor, this.receptionist, this.waitingRoom, this.statistics, this.maxCols)
     }
   }
 
   removeDynamicAgents() {
 
+    // We need to remove patients who have been discharged. 
+    //Select all svg elements of class "patient" and map it to the data list called patients
+    var allpatients = this.surface.selectAll(".patient").data(this.patients);
+    //Select all the svg groups of class "patient" whose state is EXITED
+    var treatedpatients = allpatients.filter(function(d, i) { return d.exited(); });
+    // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
+    treatedpatients.remove();
 
     // Remove the EXITED patients from the patients list using a filter command
-    this.patients = this.patients.filter(function(d) { return d.isNotExited });
+    this.patients = this.patients.filter(function(d) { return d.notExited() });
     // At this point the patients list should match the images on the screen one for one 
     // and no patients should have state EXITED
 
@@ -174,6 +176,8 @@ class Simulation {
     this.addDynamicAgents();
     // In the next function we update each agent
     this.updateDynamicAgents();
+
+    this.drawSim();
     // Sometimes agents will be removed in the following function
     this.removeDynamicAgents();
   }
