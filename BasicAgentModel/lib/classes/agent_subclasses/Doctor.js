@@ -24,8 +24,6 @@ class Caregiver extends Agent {
       .attr("class", "caregiver");
     newcaregivers
       .append("svg:image")
-      .attr("urlDoctor1", this.urlDoctor1)
-      .attr("urlReceptionist", this.urlReceptionist)
       .attr("x", getCellX)
       .attr("y", getCellY)
       .attr("width", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
@@ -38,8 +36,6 @@ class Caregiver extends Agent {
     // It would be nice to label the caregivers, so we add a text element to each new caregiver group
     newcaregivers
       .append("text")
-      .attr("cellWidth", Drawable.cellWidth)
-      .attr("cellHeight", Drawable.cellHeight)
       .attr("x", getCellXLabel)
       .attr("y", getCellYLabel)
       .attr("dy", ".35em")
