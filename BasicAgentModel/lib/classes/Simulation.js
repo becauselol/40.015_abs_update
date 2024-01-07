@@ -93,6 +93,9 @@ class Simulation {
     this.numRows = Math.ceil(this.surfaceHeight / this.cellWidth);
     this.cellHeight = this.surfaceHeight / this.numRows;
 
+    Drawable.cellWidth = this.cellWidth
+    Drawable.cellHeight = this.cellHeight
+
     // In other functions we will access the drawing surface using the d3 library.
     //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
     this.surface = d3.select("#surface");
@@ -146,14 +149,14 @@ class Simulation {
     //Select all svg elements of class "patient" and map it to the data list called patients
     var allpatients = this.surface.selectAll(".patient").data(this.patients);
     //Select all the svg groups of class "patient" whose state is EXITED
-    var treatedpatients = allpatients.filter(function (d, i) {
+    var treatedpatients = allpatients.filter(function(d, i) {
       return d.exited();
     });
     // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
     treatedpatients.remove();
 
     // Remove the EXITED patients from the patients list using a filter command
-    this.patients = this.patients.filter(function (d) {
+    this.patients = this.patients.filter(function(d) {
       return d.notExited();
     });
     // At this point the patients list should match the images on the screen one for one

@@ -6,29 +6,21 @@ function getLocationCell(row, col, cellWidth, cellHeight) {
 }
 
 function getCellX(d) {
-  this.cellWidth = Number(this.getAttribute("cellWidth"));
-  this.cellHeight = Number(this.getAttribute("cellHeight"));
-  var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight);
+  var cell = getLocationCell(d.row, d.col, d.constructor.cellWidth, d.constructor.cellHeight);
   return cell.x + "px";
 }
 
 function getCellY(d) {
-  this.cellWidth = Number(this.getAttribute("cellWidth"));
-  this.cellHeight = Number(this.getAttribute("cellHeight"));
-  var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight);
+  var cell = getLocationCell(d.row, d.col, d.constructor.cellWidth, d.constructor.cellHeight);
   return cell.y + "px";
 }
 
 function getCellXLabel(d) {
-  this.cellWidth = Number(this.getAttribute("cellWidth"));
-  this.cellHeight = Number(this.getAttribute("cellHeight"));
-  var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight);
-  return cell.x + this.cellWidth + "px";
+  var cell = getLocationCell(d.row, d.col, d.constructor.cellWidth, d.constructor.cellHeight);
+  return cell.x + d.constructor.cellWidth + "px";
 }
 
 function getCellYLabel(d) {
-  this.cellWidth = Number(this.getAttribute("cellWidth"));
-  this.cellHeight = Number(this.getAttribute("cellHeight"));
-  var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight);
-  return cell.y + this.cellHeight / 2 + "px";
+  var cell = getLocationCell(d.row, d.col, d.constructor.cellWidth, d.constructor.cellHeight);
+  return cell.y + d.constructor.cellHeight / 2 + "px";
 }
