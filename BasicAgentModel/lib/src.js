@@ -1,7 +1,11 @@
+var WINDOWBORDERSIZE = 10;
+var HUGE = 999999; //Sometimes useful when testing for big or small numbers
+
 // First we define some general parameters for our simulation
-var fps = 10; // frames per real time second 
-// FPS needs to be at least 5 and all waitTimes of trains and edge weights must be at least 1
-var timestep = 1 / fps;
+var animationDelay = 200; //controls simulation and transition speed
+
+//The drawing surface will be divided into logical cells
+var maxCols = 40;
 
 // The probability of a patient arrival needs to be less than the probability of a departure, else an infinite queue will build.
 // You also need to allow travel time for patients to move from their seat in the waiting room to get close to the doctor.
@@ -19,9 +23,22 @@ const sim = new Simulation()
 function init() {
   // Your page initialization code goes here
   // All elements of the DOM will be available here
-  window.addEventListener("resize", redrawWindow); //Redraw whenever the window is resized
-  simTimer = window.setInterval(sim.simStep, timestep); // call the function simStep every animationDelay milliseconds
-  redrawWindow();
+  window.addEventListener("resize", sim.redrawSim); //Redraw whenever the window is resized
+  simTimer = window.setInterval(sim.simStep, animationDelay); // call the function simStep every animationDelay milliseconds
+  animationDelay = 550 - document.getElementById("slider1").value;
+  sim.redrawSim(window, document, animationDelay);
+}
+
+// We need a function to start and pause the the simulation.
+function toggleSimStep() {
+  //this function is called by a click event on the html page. 
+  // Search BasicAgentModel.html to find where it is called.
+  sim.isRunning = !sim.isRunning;
+  console.log("isRunning: " + sim.isRunning);
+}
+
+function redrawWindow() {
+  sim.redrawSim(window, document, animationDelay);
 }
 
 init();

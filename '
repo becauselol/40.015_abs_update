@@ -3,27 +3,9 @@ class Simulation {
     this.name = name;
     this.currentTime = 0;
     this.animationDelay = 0;
-    this.areas = [];
-    this.patients = [];
-
-    this.doctorRow = 10;
-    this.doctorCol = 20;
-    this.receptionistRow = 1;
-    this.receptionistCol = 20;
-    this.doctor = new Doctor(this.doctorRow, this.doctorCol);
-
-    this.caregivers = [this.doctor]
-
-    this.statistics = [
-      new Statistic(
-        "Average time in clinic, Type A: ",
-        this.doctorRow + 3,
-        this.doctorCol - 4),
-      new Statistic(
-        "Average time in clinic, Type B: ",
-        this.doctorRow + 4,
-        this.doctorRow - 4)
-    ]
+    this.surfaces = [];
+    this.agents = [];
+    this.doctor = Doctor()
 
     this.isRunning = false; // used in simStep and toggleSimStep
     this.surface; // Set in the redrawWindow function. It is the D3 selection of the svg drawing surface
@@ -43,6 +25,10 @@ class Simulation {
     this.urlDoctor2 = "images/Doctor_Male.png";
     this.urlReceptionist = "images/receptionist-icon.png"
 
+    this.doctorRow = 10;
+    this.doctorCol = 20;
+    this.receptionistRow = 1;
+    this.receptionistCol = 20;
 
 
     // Simulation specific
@@ -66,46 +52,46 @@ class Simulation {
 
   }
 
-  initializeSim(window, document) {
+  initializeSim() {
     this.nextPatientID_A = 0; // increment this and assign it to the next entering patient of type A
     this.nextPatientID_B = 0; // increment this and assign it to the next entering patient of type B
     this.nextTreatedPatientID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
     this.nextTreatedPatientID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
     this.currentTime = 0;
-    this.doctor.state = DoctorState.IDLE;
-    this.statistics[0].cumulativeValue = 0;
-    this.statistics[0].count = 0;
-    this.statistics[1].cumulativeValue = 0;
-    this.statistics[1].count = 0;
-    this.patients = [];
+    this.doctor.state = IDLE;
+    statistics[0].cumulativeValue = 0;
+    statistics[0].count = 0;
+    statistics[1].cumulativeValue = 0;
+    statistics[1].count = 0;
+    patients = [];
 
 
     //resize the drawing surface; remove all its contents; 
-    this.drawsurface = document.getElementById("surface");
-    this.creditselement = document.getElementById("credits");
-    this.w = window.innerWidth;
-    this.h = window.innerHeight;
-    this.surfaceWidth = (this.w - 3 * WINDOWBORDERSIZE);
-    this.surfaceHeight = (this.h - this.creditselement.offsetHeight - 3 * WINDOWBORDERSIZE);
+    var drawsurface = document.getElementById("surface");
+    var creditselement = document.getElementById("credits");
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var surfaceWidth = (w - 3 * WINDOWBORDERSIZE);
+    var surfaceHeight = (h - creditselement.offsetHeight - 3 * WINDOWBORDERSIZE);
 
-    this.drawsurface.style.width = this.surfaceWidth + "px";
-    this.drawsurface.style.height = this.surfaceHeight + "px";
-    this.drawsurface.style.left = WINDOWBORDERSIZE / 2 + 'px';
-    this.drawsurface.style.top = WINDOWBORDERSIZE / 2 + 'px';
-    this.drawsurface.style.border = "thick solid #0000FF"; //The border is mainly for debugging; okay to remove it
-    this.drawsurface.innerHTML = ''; //This empties the contents of the drawing surface, like jQuery erase().
+    drawsurface.style.width = surfaceWidth + "px";
+    drawsurface.style.height = surfaceHeight + "px";
+    drawsurface.style.left = WINDOWBORDERSIZE / 2 + 'px';
+    drawsurface.style.top = WINDOWBORDERSIZE / 2 + 'px';
+    drawsurface.style.border = "thick solid #0000FF"; //The border is mainly for debugging; okay to remove it
+    drawsurface.innerHTML = ''; //This empties the contents of the drawing surface, like jQuery erase().
 
     // Compute the cellWidth and cellHeight, given the size of the drawing surface
-    this.numCols = this.maxCols;
-    this.cellWidth = this.surfaceWidth / this.numCols;
-    this.numRows = Math.ceil(this.surfaceHeight / this.cellWidth);
-    this.cellHeight = this.surfaceHeight / this.numRows;
+    numCols = maxCols;
+    cellWidth = surfaceWidth / numCols;
+    numRows = Math.ceil(surfaceHeight / cellWidth);
+    cellHeight = surfaceHeight / numRows;
 
     // In other functions we will access the drawing surface using the d3 library. 
     //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
-    this.surface = d3.select('#surface');
-    this.surface.selectAll('*').remove(); // we added this because setting the inner html to blank may not remove all svg elements
-    this.surface.style("font-size", "100%");
+    surface = d3.select('#surface');
+    surface.selectAll('*').remove(); // we added this because setting the inner html to blank may not remove all svg elements
+    surface.style("font-size", "100%");
     // rebuild contents of the drawing surface
     this.drawSim()
   }
@@ -118,13 +104,13 @@ class Simulation {
     // We have done the latter. probArrival is probability of arrival a patient and probTypeA is the probability of a type A patient who arrives.
     // First see if a patient arrives in this sim step.
     if (Math.random() < probArrival) {
-      this.newpatient = {
+      var newpatient = {
         "id": 1, "type": "A", "location": { "row": 1, "col": 1 },
         "target": { "row": receptionistRow, "col": receptionistCol }, "state": UNTREATED, "timeAdmitted": 0
       };
       if (Math.random() < probTypeA) newpatient.type = "A";
       else newpatient.type = "B";
-      this.patients.push(newpatient);
+      patients.push(newpatient);
     }
 
 
@@ -132,7 +118,7 @@ class Simulation {
 
   updateDynamicAgents() {
     // loop over all the agents and update their states
-    for (this.patientIndex in this.patients) {
+    for (var patientIndex in patients) {
       updatePatient(patientIndex);
     }
   }
@@ -141,26 +127,36 @@ class Simulation {
 
     // We need to remove patients who have been discharged. 
     //Select all svg elements of class "patient" and map it to the data list called patients
-    var allpatients = this.surface.selectAll(".patient").data(this.patients);
+    var allpatients = surface.selectAll(".patient").data(patients);
     //Select all the svg groups of class "patient" whose state is EXITED
-    this.treatedpatients = allpatients.filter(function(d, i) { return d.state == EXITED; });
+    var treatedpatients = allpatients.filter(function(d, i) { return d.state == EXITED; });
     // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
     treatedpatients.remove();
 
     // Remove the EXITED patients from the patients list using a filter command
-    this.patients = this.patients.filter(function(d) { return d.state != EXITED; });
+    patients = patients.filter(function(d) { return d.state != EXITED; });
     // At this point the patients list should match the images on the screen one for one 
     // and no patients should have state EXITED
 
   }
 
+  simStep() {
+    // Increment current time (for computing statistics)
+    this.currentTime++;
+    // Sometimes new agents will be created in the following function
+    this.addDynamicAgents();
+    // In the next function we update each agent
+    this.updateDynamicAgents();
+    // Sometimes agents will be removed in the following function
+    this.removeDynamicAgents();
+  }
 
   drawSim() {
     // This function is used to create or update most of the svg elements on the drawing surface.
     // See the function removeDynamicAgents() for how we remove svg elements
 
     //Select all svg elements of class "patient" and map it to the data list called patients
-    var allpatients = this.surface.selectAll(".patient").data(this.patients);
+    var allpatients = surface.selectAll(".patient").data(patients);
 
     // If the list of svg elements is longer than the data list, the excess elements are in the .exit() list
     // Excess elements need to be removed:
@@ -174,11 +170,11 @@ class Simulation {
     //Append an image element to each new patient svg group, position it according to the location data, and size it to fill a cell
     // Also note that we can choose a different image to represent the patient based on the patient type
     newpatients.append("svg:image")
-      .attr("x", function(d) { var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return cell.x + "px"; })
-      .attr("y", function(d) { var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return cell.y + "px"; })
-      .attr("width", Math.min(this.cellWidth, this.cellHeight) + "px")
-      .attr("height", Math.min(this.cellWidth, this.cellHeight) + "px")
-      .attr("xlink:href", function(d) { if (d.type == "A") return this.urlPatientA; else return this.urlPatientB; });
+      .attr("x", function(d) { var cell = getLocationCell(d.location); return cell.x + "px"; })
+      .attr("y", function(d) { var cell = getLocationCell(d.location); return cell.y + "px"; })
+      .attr("width", Math.min(cellWidth, cellHeight) + "px")
+      .attr("height", Math.min(cellWidth, cellHeight) + "px")
+      .attr("xlink:href", function(d) { if (d.type == "A") return urlPatientA; else return urlPatientB; });
 
     // For the existing patients, we want to update their location on the screen 
     // but we would like to do it with a smooth transition from their previous position.
@@ -189,30 +185,30 @@ class Simulation {
     // Next we define a transition for each of these image elements.
     // Note that we only need to update the attributes of the image element which change
     images.transition()
-      .attr("x", function(d) { this.cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return cell.x + "px"; })
-      .attr("y", function(d) { this.cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return cell.y + "px"; })
+      .attr("x", function(d) { var cell = getLocationCell(d.location); return cell.x + "px"; })
+      .attr("y", function(d) { var cell = getLocationCell(d.location); return cell.y + "px"; })
       .duration(animationDelay).ease('linear'); // This specifies the speed and type of transition we want.
 
     // Patients will leave the clinic when they have been discharged. 
     // That will be handled by a different function: removeDynamicAgents
 
     //Select all svg elements of class "caregiver" and map it to the data list called caregivers
-    var allcaregivers = this.surface.selectAll(".caregiver").data(this.caregivers);
+    var allcaregivers = surface.selectAll(".caregiver").data(caregivers);
     //This is not a dynamic class of agents so we only need to set the svg elements for the entering data elements.
     // We don't need to worry about updating these agents or removing them
     // Create an svg group ("g") for each new entry in the data list; give it class "caregiver"
     var newcaregivers = allcaregivers.enter().append("g").attr("class", "caregiver");
     newcaregivers.append("svg:image")
-      .attr("x", function(d) { var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return cell.x + "px"; })
-      .attr("y", function(d) { var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return cell.y + "px"; })
-      .attr("width", Math.min(this.cellWidth, this.cellHeight) + "px")
-      .attr("height", Math.min(this.cellWidth, this.cellHeight) + "px")
-      .attr("xlink:href", function(d) { if (d.label == "Doctor") return this.urlDoctor1; else return urlReceptionist; });
+      .attr("x", function(d) { var cell = getLocationCell(d.location); return cell.x + "px"; })
+      .attr("y", function(d) { var cell = getLocationCell(d.location); return cell.y + "px"; })
+      .attr("width", Math.min(cellWidth, cellHeight) + "px")
+      .attr("height", Math.min(cellWidth, cellHeight) + "px")
+      .attr("xlink:href", function(d) { if (d.type == DOCTOR) return urlDoctor1; else return urlReceptionist; });
 
     // It would be nice to label the caregivers, so we add a text element to each new caregiver group
     newcaregivers.append("text")
-      .attr("x", function(d) { var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return (cell.x + this.cellWidth) + "px"; })
-      .attr("y", function(d) { var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return (cell.y + this.cellHeight / 2) + "px"; })
+      .attr("x", function(d) { var cell = getLocationCell(d.location); return (cell.x + cellWidth) + "px"; })
+      .attr("y", function(d) { var cell = getLocationCell(d.location); return (cell.y + cellHeight / 2) + "px"; })
       .attr("dy", ".35em")
       .text(function(d) { return d.label; });
 
@@ -220,54 +216,43 @@ class Simulation {
     // so we will compute and display the average length of stay of each patient type.
     // We created the array "statistics" for this purpose.
     // Here we will create a group for each element of the statistics array (two elements)
-    var allstatistics = this.surface.selectAll(".statistics").data(this.statistics);
+    var allstatistics = surface.selectAll(".statistics").data(statistics);
     var newstatistics = allstatistics.enter().append("g").attr("class", "statistics");
     // For each new statistic group created we append a text label
     newstatistics.append("text")
-      .attr("x", function(d) { var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return (cell.x + this.cellWidth) + "px"; })
-      .attr("y", function(d) { var cell = getLocationCell(d.row, d.col, this.cellWidth, this.cellHeight); return (cell.y + this.cellHeight / 2) + "px"; })
+      .attr("x", function(d) { var cell = getLocationCell(d.location); return (cell.x + cellWidth) + "px"; })
+      .attr("y", function(d) { var cell = getLocationCell(d.location); return (cell.y + cellHeight / 2) + "px"; })
       .attr("dy", ".35em")
       .text("");
 
     // The data in the statistics array are always being updated.
     // So, here we update the text in the labels with the updated information.
     allstatistics.selectAll("text").text(function(d) {
-      this.avgLengthOfStay = d.cumulativeValue / (Math.max(1, d.count)); // cumulativeValue and count for each statistic are always changing
+      var avgLengthOfStay = d.cumulativeValue / (Math.max(1, d.count)); // cumulativeValue and count for each statistic are always changing
       return d.name + avgLengthOfStay.toFixed(1);
     }); //The toFixed() function sets the number of decimal places to display
 
     // Finally, we would like to draw boxes around the different areas of our system. We can use d3 to do that too.
-    var allareas = this.surface.selectAll(".areas").data(this.areas);
+    var allareas = surface.selectAll(".areas").data(areas);
     var newareas = allareas.enter().append("g").attr("class", "areas");
     // For each new area, append a rectangle to the group
     newareas.append("rect")
-      .attr("x", function(d) { return (d.startCol - 1) * this.cellWidth; })
-      .attr("y", function(d) { return (d.startRow - 1) * this.cellHeight; })
-      .attr("width", function(d) { return d.numCols * this.cellWidth; })
-      .attr("height", function(d) { return d.numRows * this.cellWidth; })
+      .attr("x", function(d) { return (d.startCol - 1) * cellWidth; })
+      .attr("y", function(d) { return (d.startRow - 1) * cellHeight; })
+      .attr("width", function(d) { return d.numCols * cellWidth; })
+      .attr("height", function(d) { return d.numRows * cellWidth; })
       .style("fill", function(d) { return d.color; })
       .style("stroke", "black")
       .style("stroke-width", 1);
 
   }
 
-  redrawSim(window, document, animationDelay) {
-    this.isRunning = false
-    window.clearInterval(this.simTimer); // clear the Timer
+  redrawSim(window, animationDelay) {
+    isRunning = false
+    window.clearInterval(simTimer); // clear the Timer
     this.animationDelay = animationDelay
-    this.simTimer = window.setInterval(this.simStep, this.animationDelay); // call the function simStep every animationDelay milliseconds
+    simTimer = window.setInterval(simStep, animationDelay); // call the function simStep every animationDelay milliseconds
 
-    this.initializeSim(window, document)
-  }
-
-  simStep() {
-    // Increment current time (for computing statistics)
-    this.currentTime++;
-    // Sometimes new agents will be created in the following function
-    this.addDynamicAgents();
-    // In the next function we update each agent
-    this.updateDynamicAgents();
-    // Sometimes agents will be removed in the following function
-    this.removeDynamicAgents();
+    this.initializeSim()
   }
 }
