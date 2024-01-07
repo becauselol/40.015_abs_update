@@ -42,8 +42,10 @@ function redrawWindow() {
 }
 
 function simStep() {
-  sim.simStep();
-  sim.drawSim();
+  if (sim.isRunning) {
+    sim.simStep();
+    sim.drawSim();
+  }
 }
 
 init();

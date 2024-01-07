@@ -9,20 +9,20 @@ const PatientState = {
 }
 
 class Patient extends Agent {
+  // The probability of a patient arrival needs to be less than the probability of a departure, else an infinite queue will build.
+  // You also need to allow travel time for patients to move from their seat in the waiting room to get close to the doctor.
+  // So don't set probDeparture too close to probArrival.
+  static probArrival = 0.25;
+  static probDeparture = 0.4;
+
+  // We can have different types of patients (A and B) according to a probability, probTypeA.
+  // This version of the simulation makes no difference between A and B patients except for the display image
+  // Later assignments can build on this basic structure.
+  static probTypeA = 0.5;
   constructor(label, row, col, type, receptionistRow, receptionistCol) {
     super(label, row, col, PatientState.UNTREATED)
     this.type = type
 
-    // The probability of a patient arrival needs to be less than the probability of a departure, else an infinite queue will build.
-    // You also need to allow travel time for patients to move from their seat in the waiting room to get close to the doctor.
-    // So don't set probDeparture too close to probArrival.
-    this.probArrival = 0.25;
-    this.probDeparture = 0.4;
-
-    // We can have different types of patients (A and B) according to a probability, probTypeA.
-    // This version of the simulation makes no difference between A and B patients except for the display image
-    // Later assignments can build on this basic structure.
-    this.probTypeA = 0.5;
 
     this.target = { "row": receptionistRow, "col": receptionistCol }
     this.timeAdmitted = 0
