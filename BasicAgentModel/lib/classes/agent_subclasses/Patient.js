@@ -154,6 +154,7 @@ class Patient extends Agent {
     patient.row = newRow;
     patient.col = newCol;
   }
+
   static draw(surface, data, animationDelay, cellWidth, cellHeight) {
     //Select all svg elements of class "patient" and map it to the data list called patients
     var allpatients = surface.selectAll(".patient").data(data);
@@ -195,12 +196,5 @@ class Patient extends Agent {
 
     // Patients will leave the clinic when they have been discharged. 
     // That will be handled by a different function: removeDynamicAgents
-
-    // We need to remove patients who have been discharged. 
-    //Select all the svg groups of class "patient" whose state is EXITED
-    // allpatients.exit().remove()
-    // var treatedpatients = allpatients.filter(function(d, i) { return d.exited(); });
-    // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
-    // treatedpatients.remove();
   }
 }
