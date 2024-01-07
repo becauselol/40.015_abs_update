@@ -5,11 +5,12 @@ const DoctorState = {
 };
 
 class Caregiver extends Agent {
+  static urlDoctor1 = "images/Doctor_Female.png";
+  static urlDoctor2 = "images/Doctor_Male.png";
+  static urlReceptionist = "images/receptionist-icon.png";
+
   constructor(label, row, col) {
     super(label, row, col, DoctorState.IDLE);
-    this.urlDoctor1 = "images/Doctor_Female.png";
-    this.urlDoctor2 = "images/Doctor_Male.png";
-    this.urlReceptionist = "images/receptionist-icon.png";
   }
 
   static draw(surface, data) {
@@ -28,9 +29,9 @@ class Caregiver extends Agent {
       .attr("y", getCellY)
       .attr("width", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
       .attr("height", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
-      .attr("xlink:href", function (d) {
-        if (d.label == "Doctor") return d.urlDoctor1;
-        else return d.urlReceptionist;
+      .attr("xlink:href", function(d) {
+        if (d.label == "Doctor") return Caregiver.urlDoctor1;
+        else return Caregiver.urlReceptionist;
       });
 
     // It would be nice to label the caregivers, so we add a text element to each new caregiver group
@@ -39,7 +40,7 @@ class Caregiver extends Agent {
       .attr("x", getCellXLabel)
       .attr("y", getCellYLabel)
       .attr("dy", ".35em")
-      .text(function (d) {
+      .text(function(d) {
         return d.label;
       });
   }

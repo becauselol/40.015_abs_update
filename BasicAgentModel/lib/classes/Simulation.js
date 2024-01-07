@@ -1,22 +1,26 @@
 var WINDOWBORDERSIZE = 10;
 
 class Simulation {
+
+  static doctorRow = 10;
+  static doctorCol = 20;
+  static receptionistRow = 1;
+  static receptionistCol = 20;
+
+  //The drawing surface will be divided into logical cells
+  static maxCols = 40;
+
   constructor(name, window, document) {
     this.name = name;
     this.currentTime = 0;
-    this.animationDelay = 0;
     this.patients = [];
 
-    this.doctorRow = 10;
-    this.doctorCol = 20;
-    this.receptionistRow = 1;
-    this.receptionistCol = 20;
 
-    this.doctor = new Caregiver("Doctor", this.doctorRow, this.doctorCol);
+    this.doctor = new Caregiver("Doctor", Simulation.doctorRow, Simulation.doctorCol);
     this.receptionist = new Caregiver(
       "Receptionist",
-      this.receptionistRow,
-      this.receptionistCol,
+      Simulation.receptionistRow,
+      Simulation.receptionistCol,
     );
 
     this.caregivers = [this.doctor, this.receptionist];
@@ -24,22 +28,22 @@ class Simulation {
     this.statistics = [
       new Statistic(
         "Average time in clinic, Type A: ",
-        this.doctorRow + 3,
-        this.doctorCol - 4,
+        Simulation.doctorRow + 3,
+        Simulation.doctorCol - 4,
       ),
       new Statistic(
         "Average time in clinic, Type B: ",
-        this.doctorRow + 4,
-        this.doctorCol - 4,
+        Simulation.doctorRow + 4,
+        Simulation.doctorCol - 4,
       ),
     ];
 
     this.waitingRoom = new Area("Waiting Area", 5, 5, 15, 11, "pink");
     this.stagingArea = new Area(
       "Staging Area",
-      this.doctorRow - 1,
+      Simulation.doctorRow - 1,
       1,
-      this.doctorCol - 2,
+      Simulation.doctorCol - 2,
       5,
       "red",
     );
@@ -49,8 +53,6 @@ class Simulation {
     this.surface; // Set in the redrawWindow function. It is the D3 selection of the svg drawing surface
     this.simTimer; // Set in the initialization function
 
-    //The drawing surface will be divided into logical cells
-    this.maxCols = 40;
 
     // Simulation specific
 
@@ -62,6 +64,7 @@ class Simulation {
     Patient.nextID_B = 0; // increment this and assign it to the next entering patient of type B
     Patient.nextTreatedID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
     Patient.nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
+
     this.currentTime = 0;
     this.doctor.state = DoctorState.IDLE;
 
@@ -87,12 +90,13 @@ class Simulation {
     drawsurface.innerHTML = ""; //This empties the contents of the drawing surface, like jQuery erase().
 
     // Compute the cellWidth and cellHeight, given the size of the drawing surface
-    var numCols = this.maxCols;
+    var numCols = Simulation.maxCols;
     Drawable.cellWidth = surfaceWidth / numCols;
+
     var numRows = Math.ceil(surfaceHeight / Drawable.cellWidth);
     Drawable.cellHeight = surfaceHeight / numRows;
 
-    Drawable.animationDelay = this.animationDelay;
+    Drawable.animationDelay = 550 - document.getElementById("slider1").value;
 
     // In other functions we will access the drawing surface using the d3 library.
     //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
@@ -131,14 +135,14 @@ class Simulation {
     //Select all svg elements of class "patient" and map it to the data list called patients
     var allpatients = this.surface.selectAll(".patient").data(this.patients);
     //Select all the svg groups of class "patient" whose state is EXITED
-    var treatedpatients = allpatients.filter(function (d) {
+    var treatedpatients = allpatients.filter(function(d) {
       return d.exited();
     });
     // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
     treatedpatients.remove();
 
     // Remove the EXITED patients from the patients list using a filter command
-    this.patients = this.patients.filter(function (d) {
+    this.patients = this.patients.filter(function(d) {
       return d.notExited();
     });
     // At this point the patients list should match the images on the screen one for one
@@ -155,11 +159,8 @@ class Simulation {
     Area.draw(this.surface, this.areas);
   }
 
-  redrawSim(window, document, animationDelay) {
+  redrawSim(window, document) {
     this.isRunning = false;
-    window.clearInterval(this.simTimer); // clear the Timer
-    this.animationDelay = animationDelay;
-
     this.initializeSim(window, document);
     this.drawSim();
   }

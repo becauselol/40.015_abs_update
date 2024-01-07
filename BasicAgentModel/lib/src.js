@@ -16,10 +16,11 @@ function toggleSimStep() {
 }
 
 function redrawWindow() {
-  window.clearInterval(simTimer);
-  simTimer = window.setInterval(simStep, animationDelay); // call the function simStep every animationDelay milliseconds
-  animationDelay = 550 - document.getElementById("slider1").value;
-  sim.redrawSim(window, document, animationDelay);
+  // call the function simStep every animationDelay milliseconds
+  window.clearInterval(simTimer); // clear the Timer
+  sim.redrawSim(window, document);
+
+  simTimer = window.setInterval(simStep, Drawable.animationDelay);
 }
 
 function simStep() {

@@ -25,17 +25,17 @@ class Patient extends Agent {
   static nextTreatedID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
   static nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
 
+  //You are free to change images to suit your purpose. These images came from icons-land.com.
+  // The copyright rules for icons-land.com require a backlink on any page where they appear.
+  // See the credits element on the html page for an example of how to comply with this rule.
+  static urlPatientA = "images/People-Patient-Female-icon.png";
+  static urlPatientB = "images/People-Patient-Male-icon.png";
+
   constructor(label, row, col, type, target) {
     super(label, row, col, PatientState.UNTREATED);
     this.type = type;
-
     this.target = target;
     this.timeAdmitted = 0;
-    //You are free to change images to suit your purpose. These images came from icons-land.com.
-    // The copyright rules for icons-land.com require a backlink on any page where they appear.
-    // See the credits element on the html page for an example of how to comply with this rule.
-    this.urlPatientA = "images/People-Patient-Female-icon.png";
-    this.urlPatientB = "images/People-Patient-Male-icon.png";
   }
 
   notExited() {
@@ -80,7 +80,7 @@ class Patient extends Agent {
     // determine if this has arrived at destination
     var hasArrived =
       Math.abs(patient.target.row - patient.row) +
-        Math.abs(patient.target.col - patient.col) ==
+      Math.abs(patient.target.col - patient.col) ==
       0;
 
     // Behavior of patient depends on his or her state
@@ -157,6 +157,7 @@ class Patient extends Agent {
           patient.state = PatientState.DISCHARGED;
           patient.target.row = 1;
           patient.target.col = maxCols;
+
           // compute statistics for discharged patient
           var timeInClinic = currentTime - patient.timeAdmitted;
           var stats;
@@ -218,9 +219,9 @@ class Patient extends Agent {
       .attr("y", getCellY)
       .attr("width", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
       .attr("height", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
-      .attr("xlink:href", function (d) {
-        if (d.type == "A") return d.urlPatientA;
-        else return d.urlPatientB;
+      .attr("xlink:href", function(d) {
+        if (d.type == "A") return Patient.urlPatientA;
+        else return Patient.urlPatientB;
       });
 
     // For the existing patients, we want to update their location on the screen

@@ -9,8 +9,8 @@ function getCellX(d) {
   var cell = getLocationCell(
     d.row,
     d.col,
-    d.constructor.cellWidth,
-    d.constructor.cellHeight,
+    Drawable.cellWidth,
+    Drawable.cellHeight,
   );
   return cell.x + "px";
 }
@@ -19,8 +19,8 @@ function getCellY(d) {
   var cell = getLocationCell(
     d.row,
     d.col,
-    d.constructor.cellWidth,
-    d.constructor.cellHeight,
+    Drawable.cellWidth,
+    Drawable.cellHeight,
   );
   return cell.y + "px";
 }
@@ -29,18 +29,18 @@ function getCellXLabel(d) {
   var cell = getLocationCell(
     d.row,
     d.col,
-    d.constructor.cellWidth,
-    d.constructor.cellHeight,
+    Drawable.cellWidth,
+    Drawable.cellHeight,
   );
-  return cell.x + d.constructor.cellWidth + "px";
+  return cell.x + Drawable.cellWidth + "px";
 }
 
 function getCellYLabel(d) {
   var cell = getLocationCell(
     d.row,
     d.col,
-    d.constructor.cellWidth,
-    d.constructor.cellHeight,
+    Drawable.cellWidth,
+    Drawable.cellHeight,
   );
-  return cell.y + d.constructor.cellHeight / 2 + "px";
+  return cell.y + Drawable.cellHeight / 2 + "px";
 }
