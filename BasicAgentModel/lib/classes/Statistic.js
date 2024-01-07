@@ -5,6 +5,11 @@ class Statistic extends Drawable {
     this.count = 0;
   }
 
+  reset() {
+    this.cumulativeValue = 0;
+    this.count = 0;
+  }
+
   updateStatistic(value) {
     this.cumulativeValue = this.cumulativeValue + value;
     this.count++;

@@ -25,11 +25,11 @@ class Patient extends Agent {
   static nextTreatedID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
   static nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
 
-  constructor(label, row, col, type, receptionistRow, receptionistCol) {
+  constructor(label, row, col, type, target) {
     super(label, row, col, PatientState.UNTREATED);
     this.type = type;
 
-    this.target = { row: receptionistRow, col: receptionistCol };
+    this.target = target;
     this.timeAdmitted = 0;
     //You are free to change images to suit your purpose. These images came from icons-land.com.
     // The copyright rules for icons-land.com require a backlink on any page where they appear.
@@ -45,7 +45,30 @@ class Patient extends Agent {
     return this.state == PatientState.EXITED;
   }
 
-  static updatePatient(
+  static spawn(data, start, target) {
+    // Patients are dynamic agents: they enter the clinic, wait, get treated, and then leave
+    // We have entering patients of two types "A" and "B"
+    // We could specify their probabilities of arrival in any simulation step separately
+    // Or we could specify a probability of arrival of all patients and then specify the probability of a Type A arrival.
+    // We have done the latter. probArrival is probability of arrival a patient and probTypeA is the probability of a type A patient who arrives.
+    // First see if a patient arrives in this sim step.
+    if (Math.random() < Patient.probArrival) {
+      var type;
+      if (Math.random() < Patient.probTypeA) type = "A";
+      else type = "B";
+
+      var newpatient = new Patient(
+        "Patient",
+        start.row,
+        start.col,
+        type,
+        target,
+      );
+      data.push(newpatient);
+    }
+  }
+
+  static update(
     currentTime,
     patient,
     doctor,

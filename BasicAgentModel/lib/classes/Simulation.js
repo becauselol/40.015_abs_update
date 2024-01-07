@@ -11,6 +11,7 @@ class Simulation {
     this.doctorCol = 20;
     this.receptionistRow = 1;
     this.receptionistCol = 20;
+
     this.doctor = new Caregiver("Doctor", this.doctorRow, this.doctorCol);
     this.receptionist = new Caregiver(
       "Receptionist",
@@ -50,8 +51,6 @@ class Simulation {
 
     //The drawing surface will be divided into logical cells
     this.maxCols = 40;
-    this.cellWidth; //cellWidth is calculated in the redrawWindow function
-    this.cellHeight; //cellHeight is calculated in the redrawWindow function
 
     // Simulation specific
 
@@ -65,36 +64,34 @@ class Simulation {
     Patient.nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
     this.currentTime = 0;
     this.doctor.state = DoctorState.IDLE;
-    this.statistics[0].cumulativeValue = 0;
-    this.statistics[0].count = 0;
-    this.statistics[1].cumulativeValue = 0;
-    this.statistics[1].count = 0;
+
+    for (var statistic of this.statistics) {
+      statistic.reset();
+    }
+
     this.patients = [];
 
     //resize the drawing surface; remove all its contents;
-    this.drawsurface = document.getElementById("surface");
-    this.creditselement = document.getElementById("credits");
-    this.w = window.innerWidth;
-    this.h = window.innerHeight;
-    this.surfaceWidth = this.w - 3 * WINDOWBORDERSIZE;
-    this.surfaceHeight =
-      this.h - this.creditselement.offsetHeight - 3 * WINDOWBORDERSIZE;
+    var drawsurface = document.getElementById("surface");
+    var creditselement = document.getElementById("credits");
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var surfaceWidth = w - 3 * WINDOWBORDERSIZE;
+    var surfaceHeight = h - creditselement.offsetHeight - 3 * WINDOWBORDERSIZE;
 
-    this.drawsurface.style.width = this.surfaceWidth + "px";
-    this.drawsurface.style.height = this.surfaceHeight + "px";
-    this.drawsurface.style.left = WINDOWBORDERSIZE / 2 + "px";
-    this.drawsurface.style.top = WINDOWBORDERSIZE / 2 + "px";
-    this.drawsurface.style.border = "thick solid #0000FF"; //The border is mainly for debugging; okay to remove it
-    this.drawsurface.innerHTML = ""; //This empties the contents of the drawing surface, like jQuery erase().
+    drawsurface.style.width = surfaceWidth + "px";
+    drawsurface.style.height = surfaceHeight + "px";
+    drawsurface.style.left = WINDOWBORDERSIZE / 2 + "px";
+    drawsurface.style.top = WINDOWBORDERSIZE / 2 + "px";
+    drawsurface.style.border = "thick solid #0000FF"; //The border is mainly for debugging; okay to remove it
+    drawsurface.innerHTML = ""; //This empties the contents of the drawing surface, like jQuery erase().
 
     // Compute the cellWidth and cellHeight, given the size of the drawing surface
-    this.numCols = this.maxCols;
-    this.cellWidth = this.surfaceWidth / this.numCols;
-    this.numRows = Math.ceil(this.surfaceHeight / this.cellWidth);
-    this.cellHeight = this.surfaceHeight / this.numRows;
+    var numCols = this.maxCols;
+    Drawable.cellWidth = surfaceWidth / numCols;
+    var numRows = Math.ceil(surfaceHeight / Drawable.cellWidth);
+    Drawable.cellHeight = surfaceHeight / numRows;
 
-    Drawable.cellWidth = this.cellWidth;
-    Drawable.cellHeight = this.cellHeight;
     Drawable.animationDelay = this.animationDelay;
 
     // In other functions we will access the drawing surface using the d3 library.
@@ -107,33 +104,17 @@ class Simulation {
   }
 
   addDynamicAgents() {
-    // Patients are dynamic agents: they enter the clinic, wait, get treated, and then leave
-    // We have entering patients of two types "A" and "B"
-    // We could specify their probabilities of arrival in any simulation step separately
-    // Or we could specify a probability of arrival of all patients and then specify the probability of a Type A arrival.
-    // We have done the latter. probArrival is probability of arrival a patient and probTypeA is the probability of a type A patient who arrives.
-    // First see if a patient arrives in this sim step.
-    if (Math.random() < Patient.probArrival) {
-      var type;
-      if (Math.random() < Patient.probTypeA) type = "A";
-      else type = "B";
-
-      var newpatient = new Patient(
-        "Patient",
-        1,
-        1,
-        type,
-        this.receptionistRow,
-        this.receptionistCol,
-      );
-      this.patients.push(newpatient);
-    }
+    Patient.spawn(
+      this.patients,
+      { row: 1, col: 1 },
+      { row: this.receptionistRow, col: this.receptionistCol },
+    );
   }
 
   updateDynamicAgents() {
     // loop over all the agents and update their states
     for (var patient of this.patients) {
-      Patient.updatePatient(
+      Patient.update(
         this.currentTime,
         patient,
         this.doctor,
@@ -150,7 +131,7 @@ class Simulation {
     //Select all svg elements of class "patient" and map it to the data list called patients
     var allpatients = this.surface.selectAll(".patient").data(this.patients);
     //Select all the svg groups of class "patient" whose state is EXITED
-    var treatedpatients = allpatients.filter(function (d, i) {
+    var treatedpatients = allpatients.filter(function (d) {
       return d.exited();
     });
     // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
