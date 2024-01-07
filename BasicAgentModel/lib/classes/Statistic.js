@@ -10,7 +10,7 @@ class Statistic extends Drawable {
     this.count++;
   }
 
-  static draw(surface, data, animationDelay, cellWidth, cellHeight) {
+  static draw(surface, data) {
     // The simulation should serve some purpose
     // so we will compute and display the average length of stay of each patient type.
     // We created the array "statistics" for this purpose.
@@ -24,8 +24,6 @@ class Statistic extends Drawable {
 
     newstatistics
       .append("text")
-      .attr("cellWidth", cellWidth)
-      .attr("cellHeight", cellHeight)
       .attr("x", getCellX)
       .attr("y", getCellY)
       .attr("dy", ".35em")

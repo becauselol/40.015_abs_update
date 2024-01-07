@@ -95,6 +95,7 @@ class Simulation {
 
     Drawable.cellWidth = this.cellWidth
     Drawable.cellHeight = this.cellHeight
+    Drawable.animationDelay = this.animationDelay
 
     // In other functions we will access the drawing surface using the d3 library.
     //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
@@ -170,30 +171,18 @@ class Simulation {
     Patient.draw(
       this.surface,
       this.patients,
-      this.animationDelay,
-      this.cellWidth,
-      this.cellHeight,
     );
     Caregiver.draw(
       this.surface,
       this.caregivers,
-      this.animationDelay,
-      this.cellWidth,
-      this.cellHeight,
     );
     Statistic.draw(
       this.surface,
       this.statistics,
-      this.animationDelay,
-      this.cellWidth,
-      this.cellHeight,
     );
     Area.draw(
       this.surface,
       this.areas,
-      this.animationDelay,
-      this.cellWidth,
-      this.cellHeight,
     );
   }
 

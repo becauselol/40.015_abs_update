@@ -57,7 +57,7 @@ class Patient extends Agent {
     // determine if this has arrived at destination
     var hasArrived =
       Math.abs(patient.target.row - patient.row) +
-        Math.abs(patient.target.col - patient.col) ==
+      Math.abs(patient.target.col - patient.col) ==
       0;
 
     // Behavior of patient depends on his or her state
@@ -174,7 +174,7 @@ class Patient extends Agent {
     patient.col = newCol;
   }
 
-  static draw(surface, data, animationDelay, cellWidth, cellHeight) {
+  static draw(surface, data) {
     //Select all svg elements of class "patient" and map it to the data list called patients
     var allpatients = surface.selectAll(".patient").data(data);
 
@@ -191,13 +191,11 @@ class Patient extends Agent {
     // Also note that we can choose a different image to represent the patient based on the patient type
     newpatients
       .append("svg:image")
-      .attr("cellWidth", cellWidth)
-      .attr("cellHeight", cellHeight)
       .attr("x", getCellX)
       .attr("y", getCellY)
-      .attr("width", Math.min(cellWidth, cellHeight) + "px")
-      .attr("height", Math.min(cellWidth, cellHeight) + "px")
-      .attr("xlink:href", function (d) {
+      .attr("width", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
+      .attr("height", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
+      .attr("xlink:href", function(d) {
         if (d.type == "A") return d.urlPatientA;
         else return d.urlPatientB;
       });
@@ -210,13 +208,10 @@ class Patient extends Agent {
     var images = allpatients.selectAll("image");
     // Next we define a transition for each of these image elements.
     // Note that we only need to update the attributes of the image element which change
-    images
-      .transition()
-      .attr("cellWidth", cellWidth)
-      .attr("cellHeight", cellHeight)
+    images.transition()
       .attr("x", getCellX)
       .attr("y", getCellY)
-      .duration(animationDelay)
+      .duration(Drawable.animationDelay)
       .ease("linear"); // This specifies the speed and type of transition we want.
 
     // Patients will leave the clinic when they have been discharged.
