@@ -111,7 +111,7 @@ class Simulation {
     Patient.spawn(
       this.patients,
       { row: 1, col: 1 },
-      { row: this.receptionistRow, col: this.receptionistCol },
+      { row: Simulation.receptionistRow, col: Simulation.receptionistCol },
     );
   }
 
@@ -125,7 +125,7 @@ class Simulation {
         this.receptionist,
         this.waitingRoom,
         this.statistics,
-        this.maxCols,
+        Simulation.maxCols,
       );
     }
   }
