@@ -18,7 +18,7 @@ var probDeparture = 0.4;
 // Later assignments can build on this basic structure.
 var probTypeA = 0.5;
 
-const sim = new Simulation("simulation", window, document)
+const sim = new Simulation("simulation", window, document);
 
 function init() {
   // Your page initialization code goes here
@@ -26,12 +26,12 @@ function init() {
   simTimer = window.setInterval(simStep, animationDelay); // call the function simStep every animationDelay milliseconds
   animationDelay = 550 - document.getElementById("slider1").value;
   sim.redrawSim(window, document, animationDelay);
-  window.addEventListener("resize", redrawWindow)
+  window.addEventListener("resize", redrawWindow);
 }
 
 // We need a function to start and pause the the simulation.
 function toggleSimStep() {
-  //this function is called by a click event on the html page. 
+  //this function is called by a click event on the html page.
   // Search BasicAgentModel.html to find where it is called.
   sim.isRunning = !sim.isRunning;
   console.log("isRunning: " + sim.isRunning);

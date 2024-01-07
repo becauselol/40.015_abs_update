@@ -10,21 +10,21 @@ var maxCols = 40;
 var cellWidth; //cellWidth is calculated in the redrawWindow function
 var cellHeight; //cellHeight is calculated in the redrawWindow function
 
-//You are free to change images to suit your purpose. These images came from icons-land.com. 
-// The copyright rules for icons-land.com require a backlink on any page where they appear. 
+//You are free to change images to suit your purpose. These images came from icons-land.com.
+// The copyright rules for icons-land.com require a backlink on any page where they appear.
 // See the credits element on the html page for an example of how to comply with this rule.
 const urlPatientA = "images/People-Patient-Female-icon.png";
 const urlPatientB = "images/People-Patient-Male-icon.png";
 const urlDoctor1 = "images/Doctor_Female.png";
 const urlDoctor2 = "images/Doctor_Male.png";
-const urlReceptionist = "images/receptionist-icon.png"
+const urlReceptionist = "images/receptionist-icon.png";
 
 var doctorRow = 10;
 var doctorCol = 20;
 var receptionistRow = 1;
 var receptionistCol = 20;
 
-//a patient enters the hospital UNTREATED; he or she then is QUEUEING to be treated by a doctor; 
+//a patient enters the hospital UNTREATED; he or she then is QUEUEING to be treated by a doctor;
 // then INTREATMENT with the doctor; then TREATED;
 // When the patient is DISCHARGED he or she leaves the clinic immediately at that point.
 const UNTREATED = 0;
@@ -35,35 +35,69 @@ const TREATED = 4;
 const DISCHARGED = 5;
 const EXITED = 6;
 
-// The doctor can be either BUSY treating a patient, or IDLE, waiting for a patient 
+// The doctor can be either BUSY treating a patient, or IDLE, waiting for a patient
 const IDLE = 0;
 const BUSY = 1;
 
 // There are two types of caregivers in our system: doctors and receptionists
 const DOCTOR = 0;
 const RECEPTIONIST = 1;
-console.log(RECEPTIONIST)
+console.log(RECEPTIONIST);
 
 // patients is a dynamic list, initially empty
 var patients = [];
-// caregivers is a static list, populated with a receptionist and a doctor	
+// caregivers is a static list, populated with a receptionist and a doctor
 var caregivers = [
-  { "type": DOCTOR, "label": "Doctor", "location": { "row": doctorRow, "col": doctorCol }, "state": IDLE },
-  { "type": RECEPTIONIST, "label": "Receptionist", "location": { "row": receptionistRow, "col": receptionistCol }, "state": IDLE }
+  {
+    type: DOCTOR,
+    label: "Doctor",
+    location: { row: doctorRow, col: doctorCol },
+    state: IDLE,
+  },
+  {
+    type: RECEPTIONIST,
+    label: "Receptionist",
+    location: { row: receptionistRow, col: receptionistCol },
+    state: IDLE,
+  },
 ];
 var doctor = caregivers[0]; // the doctor is the first element of the caregivers list.
 
 // We can section our screen into different areas. In this model, the waiting area and the staging area are separate.
 var areas = [
-  { "label": "Waiting Area", "startRow": 4, "numRows": 5, "startCol": 15, "numCols": 11, "color": "pink" },
-  { "label": "Staging Area", "startRow": doctorRow - 1, "numRows": 1, "startCol": doctorCol - 2, "numCols": 5, "color": "red" }
-]
+  {
+    label: "Waiting Area",
+    startRow: 4,
+    numRows: 5,
+    startCol: 15,
+    numCols: 11,
+    color: "pink",
+  },
+  {
+    label: "Staging Area",
+    startRow: doctorRow - 1,
+    numRows: 1,
+    startCol: doctorCol - 2,
+    numCols: 5,
+    color: "red",
+  },
+];
 var waitingRoom = areas[0]; // the waiting room is the first element of the areas array
 
 var currentTime = 0;
 var statistics = [
-  { "name": "Average time in clinic, Type A: ", "location": { "row": doctorRow + 3, "col": doctorCol - 4 }, "cumulativeValue": 0, "count": 0 },
-  { "name": "Average time in clinic, Type B: ", "location": { "row": doctorRow + 4, "col": doctorCol - 4 }, "cumulativeValue": 0, "count": 0 }
+  {
+    name: "Average time in clinic, Type A: ",
+    location: { row: doctorRow + 3, col: doctorCol - 4 },
+    cumulativeValue: 0,
+    count: 0,
+  },
+  {
+    name: "Average time in clinic, Type B: ",
+    location: { row: doctorRow + 4, col: doctorCol - 4 },
+    cumulativeValue: 0,
+    count: 0,
+  },
 ];
 
 // The probability of a patient arrival needs to be less than the probability of a departure, else an infinite queue will build.
@@ -84,7 +118,7 @@ var nextTreatedPatientID_A = 1; //this is the id of the next patient of type A t
 var nextTreatedPatientID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
 
 // This next function is executed when the script is loaded. It contains the page initialization code.
-(function() {
+(function () {
   // Your page initialization code goes here
   // All elements of the DOM will be available here
   window.addEventListener("resize", redrawWindow); //Redraw whenever the window is resized
@@ -94,7 +128,7 @@ var nextTreatedPatientID_B = 1; //this is the id of the next patient of type B t
 
 // We need a function to start and pause the the simulation.
 function toggleSimStep() {
-  //this function is called by a click event on the html page. 
+  //this function is called by a click event on the html page.
   // Search BasicAgentModel.html to find where it is called.
   isRunning = !isRunning;
   console.log("isRunning: " + isRunning);
@@ -120,21 +154,20 @@ function redrawWindow() {
   statistics[1].count = 0;
   patients = [];
 
-
-  //resize the drawing surface; remove all its contents; 
+  //resize the drawing surface; remove all its contents;
   var drawsurface = document.getElementById("surface");
   var creditselement = document.getElementById("credits");
   var w = window.innerWidth;
   var h = window.innerHeight;
-  var surfaceWidth = (w - 3 * WINDOWBORDERSIZE);
-  var surfaceHeight = (h - creditselement.offsetHeight - 3 * WINDOWBORDERSIZE);
+  var surfaceWidth = w - 3 * WINDOWBORDERSIZE;
+  var surfaceHeight = h - creditselement.offsetHeight - 3 * WINDOWBORDERSIZE;
 
   drawsurface.style.width = surfaceWidth + "px";
   drawsurface.style.height = surfaceHeight + "px";
-  drawsurface.style.left = WINDOWBORDERSIZE / 2 + 'px';
-  drawsurface.style.top = WINDOWBORDERSIZE / 2 + 'px';
+  drawsurface.style.left = WINDOWBORDERSIZE / 2 + "px";
+  drawsurface.style.top = WINDOWBORDERSIZE / 2 + "px";
   drawsurface.style.border = "thick solid #0000FF"; //The border is mainly for debugging; okay to remove it
-  drawsurface.innerHTML = ''; //This empties the contents of the drawing surface, like jQuery erase().
+  drawsurface.innerHTML = ""; //This empties the contents of the drawing surface, like jQuery erase().
 
   // Compute the cellWidth and cellHeight, given the size of the drawing surface
   numCols = maxCols;
@@ -142,14 +175,14 @@ function redrawWindow() {
   numRows = Math.ceil(surfaceHeight / cellWidth);
   cellHeight = surfaceHeight / numRows;
 
-  // In other functions we will access the drawing surface using the d3 library. 
+  // In other functions we will access the drawing surface using the d3 library.
   //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
-  surface = d3.select('#surface');
-  surface.selectAll('*').remove(); // we added this because setting the inner html to blank may not remove all svg elements
+  surface = d3.select("#surface");
+  surface.selectAll("*").remove(); // we added this because setting the inner html to blank may not remove all svg elements
   surface.style("font-size", "100%");
   // rebuild contents of the drawing surface
   updateSurface();
-};
+}
 
 // The window is resizable, so we need to translate row and column coordinates into screen coordinates x and y
 function getLocationCell(location) {
@@ -157,7 +190,7 @@ function getLocationCell(location) {
   var col = location.col;
   var x = (col - 1) * cellWidth; //cellWidth is set in the redrawWindow function
   var y = (row - 1) * cellHeight; //cellHeight is set in the redrawWindow function
-  return { "x": x, "y": y };
+  return { x: x, y: y };
 }
 
 function updateSurface() {
@@ -178,14 +211,24 @@ function updateSurface() {
   var newpatients = allpatients.enter().append("g").attr("class", "patient");
   //Append an image element to each new patient svg group, position it according to the location data, and size it to fill a cell
   // Also note that we can choose a different image to represent the patient based on the patient type
-  newpatients.append("svg:image")
-    .attr("x", function(d) { var cell = getLocationCell(d.location); return cell.x + "px"; })
-    .attr("y", function(d) { var cell = getLocationCell(d.location); return cell.y + "px"; })
+  newpatients
+    .append("svg:image")
+    .attr("x", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.x + "px";
+    })
+    .attr("y", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.y + "px";
+    })
     .attr("width", Math.min(cellWidth, cellHeight) + "px")
     .attr("height", Math.min(cellWidth, cellHeight) + "px")
-    .attr("xlink:href", function(d) { if (d.type == "A") return urlPatientA; else return urlPatientB; });
+    .attr("xlink:href", function (d) {
+      if (d.type == "A") return urlPatientA;
+      else return urlPatientB;
+    });
 
-  // For the existing patients, we want to update their location on the screen 
+  // For the existing patients, we want to update their location on the screen
   // but we would like to do it with a smooth transition from their previous position.
   // D3 provides a very nice transition function allowing us to animate transformations of our svg elements.
 
@@ -193,12 +236,20 @@ function updateSurface() {
   var images = allpatients.selectAll("image");
   // Next we define a transition for each of these image elements.
   // Note that we only need to update the attributes of the image element which change
-  images.transition()
-    .attr("x", function(d) { var cell = getLocationCell(d.location); return cell.x + "px"; })
-    .attr("y", function(d) { var cell = getLocationCell(d.location); return cell.y + "px"; })
-    .duration(animationDelay).ease('linear'); // This specifies the speed and type of transition we want.
+  images
+    .transition()
+    .attr("x", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.x + "px";
+    })
+    .attr("y", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.y + "px";
+    })
+    .duration(animationDelay)
+    .ease("linear"); // This specifies the speed and type of transition we want.
 
-  // Patients will leave the clinic when they have been discharged. 
+  // Patients will leave the clinic when they have been discharged.
   // That will be handled by a different function: removeDynamicAgents
 
   //Select all svg elements of class "caregiver" and map it to the data list called caregivers
@@ -206,38 +257,70 @@ function updateSurface() {
   //This is not a dynamic class of agents so we only need to set the svg elements for the entering data elements.
   // We don't need to worry about updating these agents or removing them
   // Create an svg group ("g") for each new entry in the data list; give it class "caregiver"
-  var newcaregivers = allcaregivers.enter().append("g").attr("class", "caregiver");
-  newcaregivers.append("svg:image")
-    .attr("x", function(d) { var cell = getLocationCell(d.location); return cell.x + "px"; })
-    .attr("y", function(d) { var cell = getLocationCell(d.location); return cell.y + "px"; })
+  var newcaregivers = allcaregivers
+    .enter()
+    .append("g")
+    .attr("class", "caregiver");
+  newcaregivers
+    .append("svg:image")
+    .attr("x", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.x + "px";
+    })
+    .attr("y", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.y + "px";
+    })
     .attr("width", Math.min(cellWidth, cellHeight) + "px")
     .attr("height", Math.min(cellWidth, cellHeight) + "px")
-    .attr("xlink:href", function(d) { if (d.type == DOCTOR) return urlDoctor1; else return urlReceptionist; });
+    .attr("xlink:href", function (d) {
+      if (d.type == DOCTOR) return urlDoctor1;
+      else return urlReceptionist;
+    });
 
   // It would be nice to label the caregivers, so we add a text element to each new caregiver group
-  newcaregivers.append("text")
-    .attr("x", function(d) { var cell = getLocationCell(d.location); return (cell.x + cellWidth) + "px"; })
-    .attr("y", function(d) { var cell = getLocationCell(d.location); return (cell.y + cellHeight / 2) + "px"; })
+  newcaregivers
+    .append("text")
+    .attr("x", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.x + cellWidth + "px";
+    })
+    .attr("y", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.y + cellHeight / 2 + "px";
+    })
     .attr("dy", ".35em")
-    .text(function(d) { return d.label; });
+    .text(function (d) {
+      return d.label;
+    });
 
-  // The simulation should serve some purpose 
+  // The simulation should serve some purpose
   // so we will compute and display the average length of stay of each patient type.
   // We created the array "statistics" for this purpose.
   // Here we will create a group for each element of the statistics array (two elements)
   var allstatistics = surface.selectAll(".statistics").data(statistics);
-  var newstatistics = allstatistics.enter().append("g").attr("class", "statistics");
+  var newstatistics = allstatistics
+    .enter()
+    .append("g")
+    .attr("class", "statistics");
   // For each new statistic group created we append a text label
-  newstatistics.append("text")
-    .attr("x", function(d) { var cell = getLocationCell(d.location); return (cell.x + cellWidth) + "px"; })
-    .attr("y", function(d) { var cell = getLocationCell(d.location); return (cell.y + cellHeight / 2) + "px"; })
+  newstatistics
+    .append("text")
+    .attr("x", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.x + cellWidth + "px";
+    })
+    .attr("y", function (d) {
+      var cell = getLocationCell(d.location);
+      return cell.y + cellHeight / 2 + "px";
+    })
     .attr("dy", ".35em")
     .text("");
 
   // The data in the statistics array are always being updated.
   // So, here we update the text in the labels with the updated information.
-  allstatistics.selectAll("text").text(function(d) {
-    var avgLengthOfStay = d.cumulativeValue / (Math.max(1, d.count)); // cumulativeValue and count for each statistic are always changing
+  allstatistics.selectAll("text").text(function (d) {
+    var avgLengthOfStay = d.cumulativeValue / Math.max(1, d.count); // cumulativeValue and count for each statistic are always changing
     return d.name + avgLengthOfStay.toFixed(1);
   }); //The toFixed() function sets the number of decimal places to display
 
@@ -245,17 +328,26 @@ function updateSurface() {
   var allareas = surface.selectAll(".areas").data(areas);
   var newareas = allareas.enter().append("g").attr("class", "areas");
   // For each new area, append a rectangle to the group
-  newareas.append("rect")
-    .attr("x", function(d) { return (d.startCol - 1) * cellWidth; })
-    .attr("y", function(d) { return (d.startRow - 1) * cellHeight; })
-    .attr("width", function(d) { return d.numCols * cellWidth; })
-    .attr("height", function(d) { return d.numRows * cellWidth; })
-    .style("fill", function(d) { return d.color; })
+  newareas
+    .append("rect")
+    .attr("x", function (d) {
+      return (d.startCol - 1) * cellWidth;
+    })
+    .attr("y", function (d) {
+      return (d.startRow - 1) * cellHeight;
+    })
+    .attr("width", function (d) {
+      return d.numCols * cellWidth;
+    })
+    .attr("height", function (d) {
+      return d.numRows * cellWidth;
+    })
+    .style("fill", function (d) {
+      return d.color;
+    })
     .style("stroke", "black")
     .style("stroke-width", 1);
-
 }
-
 
 function addDynamicAgents() {
   // Patients are dynamic agents: they enter the clinic, wait, get treated, and then leave
@@ -266,14 +358,17 @@ function addDynamicAgents() {
   // First see if a patient arrives in this sim step.
   if (Math.random() < probArrival) {
     var newpatient = {
-      "id": 1, "type": "A", "location": { "row": 1, "col": 1 },
-      "target": { "row": receptionistRow, "col": receptionistCol }, "state": UNTREATED, "timeAdmitted": 0
+      id: 1,
+      type: "A",
+      location: { row: 1, col: 1 },
+      target: { row: receptionistRow, col: receptionistCol },
+      state: UNTREATED,
+      timeAdmitted: 0,
     };
     if (Math.random() < probTypeA) newpatient.type = "A";
     else newpatient.type = "B";
     patients.push(newpatient);
   }
-
 }
 
 function updatePatient(patientIndex) {
@@ -286,9 +381,10 @@ function updatePatient(patientIndex) {
   var type = patient.type;
   var state = patient.state;
 
-
   // determine if patient has arrived at destination
-  var hasArrived = (Math.abs(patient.target.row - row) + Math.abs(patient.target.col - col)) == 0;
+  var hasArrived =
+    Math.abs(patient.target.row - row) + Math.abs(patient.target.col - col) ==
+    0;
 
   // Behavior of patient depends on his or her state
   switch (state) {
@@ -297,8 +393,12 @@ function updatePatient(patientIndex) {
         patient.timeAdmitted = currentTime;
         patient.state = WAITING;
         // pick a random spot in the waiting area to queue
-        patient.target.row = waitingRoom.startRow + Math.floor(Math.random() * waitingRoom.numRows);
-        patient.target.col = waitingRoom.startCol + Math.floor(Math.random() * waitingRoom.numCols);
+        patient.target.row =
+          waitingRoom.startRow +
+          Math.floor(Math.random() * waitingRoom.numRows);
+        patient.target.col =
+          waitingRoom.startCol +
+          Math.floor(Math.random() * waitingRoom.numCols);
         // receptionist assigns a sequence number to each patient to govern order of treatment
         if (patient.type == "A") patient.id = ++nextPatientID_A;
         else patient.id = ++nextPatientID_B;
@@ -341,7 +441,8 @@ function updatePatient(patientIndex) {
           patient.state = INTREATMENT;
           patient.target.row = doctorRow;
           patient.target.col = doctorCol;
-          if (patient.type == "A") nextTreatedPatientID_A++; else nextTreatedPatientID_B++;
+          if (patient.type == "A") nextTreatedPatientID_A++;
+          else nextTreatedPatientID_B++;
         }
       }
       break;
@@ -388,29 +489,33 @@ function updatePatient(patientIndex) {
   // set the speed
   var cellsPerStep = 1;
   // compute the cell to move to
-  var newRow = row + Math.min(Math.abs(rowsToGo), cellsPerStep) * Math.sign(rowsToGo);
-  var newCol = col + Math.min(Math.abs(colsToGo), cellsPerStep) * Math.sign(colsToGo);
+  var newRow =
+    row + Math.min(Math.abs(rowsToGo), cellsPerStep) * Math.sign(rowsToGo);
+  var newCol =
+    col + Math.min(Math.abs(colsToGo), cellsPerStep) * Math.sign(colsToGo);
   // update the location of the patient
   patient.location.row = newRow;
   patient.location.col = newCol;
-
 }
 
 function removeDynamicAgents() {
-  // We need to remove patients who have been discharged. 
+  // We need to remove patients who have been discharged.
   //Select all svg elements of class "patient" and map it to the data list called patients
   var allpatients = surface.selectAll(".patient").data(patients);
   //Select all the svg groups of class "patient" whose state is EXITED
-  var treatedpatients = allpatients.filter(function(d, i) { return d.state == EXITED; });
+  var treatedpatients = allpatients.filter(function (d, i) {
+    return d.state == EXITED;
+  });
   // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
   treatedpatients.remove();
 
   // Remove the EXITED patients from the patients list using a filter command
-  patients = patients.filter(function(d) { return d.state != EXITED; });
-  // At this point the patients list should match the images on the screen one for one 
+  patients = patients.filter(function (d) {
+    return d.state != EXITED;
+  });
+  // At this point the patients list should match the images on the screen one for one
   // and no patients should have state EXITED
 }
-
 
 function updateDynamicAgents() {
   // loop over all the agents and update their states
@@ -421,9 +526,10 @@ function updateDynamicAgents() {
 }
 
 function simStep() {
-  //This function is called by a timer; if running, it executes one simulation step 
+  //This function is called by a timer; if running, it executes one simulation step
   //The timing interval is set in the page initialization function near the top of this file
-  if (isRunning) { //the isRunning variable is toggled by toggleSimStep
+  if (isRunning) {
+    //the isRunning variable is toggled by toggleSimStep
     // Increment current time (for computing statistics)
     currentTime++;
     // Sometimes new agents will be created in the following function

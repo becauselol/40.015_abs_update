@@ -6,7 +6,7 @@ const PatientState = {
   TREATED: 4,
   DISCHARGED: 5,
   EXITED: 6,
-}
+};
 
 class Patient extends Agent {
   // The probability of a patient arrival needs to be less than the probability of a departure, else an infinite queue will build.
@@ -26,14 +26,13 @@ class Patient extends Agent {
   static nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
 
   constructor(label, row, col, type, receptionistRow, receptionistCol) {
-    super(label, row, col, PatientState.UNTREATED)
-    this.type = type
+    super(label, row, col, PatientState.UNTREATED);
+    this.type = type;
 
-
-    this.target = { "row": receptionistRow, "col": receptionistCol }
-    this.timeAdmitted = 0
-    //You are free to change images to suit your purpose. These images came from icons-land.com. 
-    // The copyright rules for icons-land.com require a backlink on any page where they appear. 
+    this.target = { row: receptionistRow, col: receptionistCol };
+    this.timeAdmitted = 0;
+    //You are free to change images to suit your purpose. These images came from icons-land.com.
+    // The copyright rules for icons-land.com require a backlink on any page where they appear.
     // See the credits element on the html page for an example of how to comply with this rule.
     this.urlPatientA = "images/People-Patient-Female-icon.png";
     this.urlPatientB = "images/People-Patient-Male-icon.png";
@@ -46,9 +45,20 @@ class Patient extends Agent {
     return this.state == PatientState.EXITED;
   }
 
-  static updatePatient(currentTime, patient, doctor, receptionist, waitingRoom, statistics, maxCols) {
+  static updatePatient(
+    currentTime,
+    patient,
+    doctor,
+    receptionist,
+    waitingRoom,
+    statistics,
+    maxCols,
+  ) {
     // determine if this has arrived at destination
-    var hasArrived = (Math.abs(patient.target.row - patient.row) + Math.abs(patient.target.col - patient.col)) == 0;
+    var hasArrived =
+      Math.abs(patient.target.row - patient.row) +
+        Math.abs(patient.target.col - patient.col) ==
+      0;
 
     // Behavior of patient depends on his or her state
     switch (patient.state) {
@@ -57,8 +67,12 @@ class Patient extends Agent {
           patient.timeAdmitted = currentTime;
           patient.state = PatientState.WAITING;
           // pick a random spot in the waiting area to queue
-          patient.target.row = waitingRoom.startRow + Math.floor(Math.random() * waitingRoom.numRows);
-          patient.target.col = waitingRoom.startCol + Math.floor(Math.random() * waitingRoom.numCols);
+          patient.target.row =
+            waitingRoom.startRow +
+            Math.floor(Math.random() * waitingRoom.numRows);
+          patient.target.col =
+            waitingRoom.startCol +
+            Math.floor(Math.random() * waitingRoom.numCols);
           // receptionist assigns a sequence number to each patient to govern order of treatment
           if (patient.type == "A") patient.id = ++Patient.nextID_A;
           else patient.id = ++Patient.nextID_B;
@@ -101,7 +115,8 @@ class Patient extends Agent {
             patient.state = PatientState.INTREATMENT;
             patient.target.row = doctor.row;
             patient.target.col = doctor.col;
-            if (patient.type == "A") Patient.nextTreatedID_A++; else Patient.nextTreatedID_B++;
+            if (patient.type == "A") Patient.nextTreatedID_A++;
+            else Patient.nextTreatedID_B++;
           }
         }
         break;
@@ -148,8 +163,12 @@ class Patient extends Agent {
     // set the speed
     var cellsPerStep = 1;
     // compute the cell to move to
-    var newRow = patient.row + Math.min(Math.abs(rowsToGo), cellsPerStep) * Math.sign(rowsToGo);
-    var newCol = patient.col + Math.min(Math.abs(colsToGo), cellsPerStep) * Math.sign(colsToGo);
+    var newRow =
+      patient.row +
+      Math.min(Math.abs(rowsToGo), cellsPerStep) * Math.sign(rowsToGo);
+    var newCol =
+      patient.col +
+      Math.min(Math.abs(colsToGo), cellsPerStep) * Math.sign(colsToGo);
     // update the location of the patient
     patient.row = newRow;
     patient.col = newCol;
@@ -170,16 +189,20 @@ class Patient extends Agent {
     var newpatients = allpatients.enter().append("g").attr("class", "patient");
     //Append an image element to each new patient svg group, position it according to the location data, and size it to fill a cell
     // Also note that we can choose a different image to represent the patient based on the patient type
-    newpatients.append("svg:image")
+    newpatients
+      .append("svg:image")
       .attr("cellWidth", cellWidth)
       .attr("cellHeight", cellHeight)
       .attr("x", getCellX)
       .attr("y", getCellY)
       .attr("width", Math.min(cellWidth, cellHeight) + "px")
       .attr("height", Math.min(cellWidth, cellHeight) + "px")
-      .attr("xlink:href", function(d) { if (d.type == "A") return d.urlPatientA; else return d.urlPatientB; });
+      .attr("xlink:href", function (d) {
+        if (d.type == "A") return d.urlPatientA;
+        else return d.urlPatientB;
+      });
 
-    // For the existing patients, we want to update their location on the screen 
+    // For the existing patients, we want to update their location on the screen
     // but we would like to do it with a smooth transition from their previous position.
     // D3 provides a very nice transition function allowing us to animate transformations of our svg elements.
 
@@ -187,14 +210,16 @@ class Patient extends Agent {
     var images = allpatients.selectAll("image");
     // Next we define a transition for each of these image elements.
     // Note that we only need to update the attributes of the image element which change
-    images.transition()
+    images
+      .transition()
       .attr("cellWidth", cellWidth)
       .attr("cellHeight", cellHeight)
       .attr("x", getCellX)
       .attr("y", getCellY)
-      .duration(animationDelay).ease('linear'); // This specifies the speed and type of transition we want.
+      .duration(animationDelay)
+      .ease("linear"); // This specifies the speed and type of transition we want.
 
-    // Patients will leave the clinic when they have been discharged. 
+    // Patients will leave the clinic when they have been discharged.
     // That will be handled by a different function: removeDynamicAgents
   }
 }
