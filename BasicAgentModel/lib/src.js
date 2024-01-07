@@ -18,15 +18,15 @@ var probDeparture = 0.4;
 // Later assignments can build on this basic structure.
 var probTypeA = 0.5;
 
-const sim = new Simulation()
+const sim = new Simulation("simulation", window, document)
 
 function init() {
   // Your page initialization code goes here
   // All elements of the DOM will be available here
-  window.addEventListener("resize", sim.redrawSim); //Redraw whenever the window is resized
-  simTimer = window.setInterval(sim.simStep, animationDelay); // call the function simStep every animationDelay milliseconds
+  simTimer = window.setInterval(simStep, animationDelay); // call the function simStep every animationDelay milliseconds
   animationDelay = 550 - document.getElementById("slider1").value;
   sim.redrawSim(window, document, animationDelay);
+  window.addEventListener("resize", redrawWindow)
 }
 
 // We need a function to start and pause the the simulation.
@@ -39,6 +39,11 @@ function toggleSimStep() {
 
 function redrawWindow() {
   sim.redrawSim(window, document, animationDelay);
+}
+
+function simStep() {
+  sim.simStep();
+  sim.drawSim();
 }
 
 init();
