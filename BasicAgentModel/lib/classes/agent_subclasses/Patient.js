@@ -120,7 +120,7 @@ class Patient extends Agent {
           patient.target.row = 1;
           patient.target.col = maxCols;
           // compute statistics for discharged patient
-          var timeInClinic = this.currentTime - patient.timeAdmitted;
+          var timeInClinic = currentTime - patient.timeAdmitted;
           var stats;
           if (patient.type == "A") {
             stats = statistics[0];
