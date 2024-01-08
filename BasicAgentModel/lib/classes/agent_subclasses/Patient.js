@@ -45,6 +45,13 @@ class Patient extends Agent {
     return this.state == PatientState.EXITED;
   }
 
+  static resetQueue() {
+    Patient.nextID_A = 0; // increment this and assign it to the next entering patient of type A
+    Patient.nextID_B = 0; // increment this and assign it to the next entering patient of type B
+    Patient.nextTreatedID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
+    Patient.nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
+  }
+
   static spawn(data, start, target) {
     // Patients are dynamic agents: they enter the clinic, wait, get treated, and then leave
     // We have entering patients of two types "A" and "B"

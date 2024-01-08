@@ -10,7 +10,7 @@ class Simulation {
   //The drawing surface will be divided into logical cells
   static maxCols = 40;
 
-  constructor(name, window, document) {
+  constructor(name, drawsurface, creditselement, w, h, animationDelay) {
     this.name = name;
     this.currentTime = 0;
     this.patients = [];
@@ -56,14 +56,11 @@ class Simulation {
 
     // Simulation specific
 
-    this.initializeSim(window, document);
+    this.initializeSim(drawsurface, creditselement, w, h, animationDelay);
   }
 
-  initializeSim(window, document) {
-    Patient.nextID_A = 0; // increment this and assign it to the next entering patient of type A
-    Patient.nextID_B = 0; // increment this and assign it to the next entering patient of type B
-    Patient.nextTreatedID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
-    Patient.nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
+  initializeSim(drawsurface, creditselement, w, h, animationDelay) {
+    Patient.resetQueue()
 
     this.currentTime = 0;
     this.doctor.state = DoctorState.IDLE;
@@ -75,10 +72,6 @@ class Simulation {
     this.patients = [];
 
     //resize the drawing surface; remove all its contents;
-    var drawsurface = document.getElementById("surface");
-    var creditselement = document.getElementById("credits");
-    var w = window.innerWidth;
-    var h = window.innerHeight;
     var surfaceWidth = w - 3 * WINDOWBORDERSIZE;
     var surfaceHeight = h - creditselement.offsetHeight - 3 * WINDOWBORDERSIZE;
 
@@ -96,7 +89,7 @@ class Simulation {
     var numRows = Math.ceil(surfaceHeight / Drawable.cellWidth);
     Drawable.cellHeight = surfaceHeight / numRows;
 
-    Drawable.animationDelay = 550 - document.getElementById("slider1").value;
+    Drawable.animationDelay = animationDelay
 
     // In other functions we will access the drawing surface using the d3 library.
     //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
@@ -159,9 +152,9 @@ class Simulation {
     Area.draw(this.surface, this.areas);
   }
 
-  redrawSim(window, document) {
+  redrawSim(drawsurface, creditselement, w, h, animationDelay) {
     this.isRunning = false;
-    this.initializeSim(window, document);
+    this.initializeSim(drawsurface, creditselement, w, h, animationDelay);
     this.drawSim();
   }
 
