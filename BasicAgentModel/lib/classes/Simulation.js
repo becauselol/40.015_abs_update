@@ -8,6 +8,7 @@ class Simulation {
     this.name = name;
     this.currentTime = 0;
 
+    // Here we call the initialization function for each class
     Patient.init(this);
     Caregiver.init(this);
     Statistic.init(this);
@@ -25,6 +26,7 @@ class Simulation {
   initializeSim(drawsurface, creditselement, w, h, animationDelay) {
     this.currentTime = 0;
 
+    // here we call each classes respective resetSim function
     Patient.resetSim(this);
     Caregiver.resetSim(this);
     Statistic.resetSim(this);
