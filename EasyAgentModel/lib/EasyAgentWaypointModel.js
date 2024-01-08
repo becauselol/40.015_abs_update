@@ -21,9 +21,9 @@ var waypointCol = 20;
 var endRow = 5;
 var endCol = 30;
 
-//a agent enters the hospital UNTREATED; he or she then is QUEUEING to be treated by a doctor;
-// then INTREATMENT with the doctor; then TREATED;
-// When the agent is DISCHARGED he or she leaves the clinic immediately at that point.
+//a agent enters the simulation MOVING; 
+// the agent then moves until it reaches its destination. It is then EXITED
+// When the agent is EXITED he or she leaves the simulation immediately at that point.
 const MOVING = 0;
 const WAYPOINT = 1;
 const EXITED = 2;
@@ -31,7 +31,9 @@ const EXITED = 2;
 // agents is a dynamic list, initially empty
 var agents = [];
 
-// We can section our screen into different areas. In this model, the waiting area and the staging area are separate.
+// We can section our screen into different areas. 
+// We have specified two areas for visualization
+// A Start Area and a End Area
 var areas = [
   {
     label: "Start Area",
@@ -57,10 +59,28 @@ var areas = [
     numCols: 3,
     color: "red",
   },
+
+  {
+    label: "Start Area",
+    startRow: startRow - 1,
+    numRows: 3,
+    startCol: startCol,
+    numCols: 3,
+    color: "pink",
+  },
+  {
+    label: "End Area",
+    startRow: endRow - 1,
+    numRows: 3,
+    startCol: endCol - 1,
+    numCols: 3,
+    color: "red",
+  },
 ];
 
+// We define some simulation specific variables 
+// currentTime keeps track of the simulation time
 var currentTime = 0;
-var probArrival = 0.5;
 
 // This next function is executed when the script is loaded. It contains the page initialization code.
 (function() {
@@ -74,7 +94,7 @@ var probArrival = 0.5;
 // We need a function to start and pause the the simulation.
 function toggleSimStep() {
   //this function is called by a click event on the html page.
-  // Search BasicAgentModel.html to find where it is called.
+  // Search EasyAgentModel.html to find where it is called.
   isRunning = !isRunning;
   console.log("isRunning: " + isRunning);
 }
@@ -83,7 +103,8 @@ function redrawWindow() {
   isRunning = false; // used by simStep
   window.clearInterval(simTimer); // clear the Timer
   animationDelay = 550 - document.getElementById("slider1").value;
-  simTimer = window.setInterval(simStep, animationDelay); // call the function simStep every animationDelay milliseconds
+  // call the function simStep every animationDelay milliseconds
+  simTimer = window.setInterval(simStep, animationDelay);
 
   // Re-initialize simulation variables
   currentTime = 0;
@@ -102,7 +123,8 @@ function redrawWindow() {
   drawsurface.style.height = surfaceHeight + "px";
   drawsurface.style.left = WINDOWBORDERSIZE / 2 + "px";
   drawsurface.style.top = WINDOWBORDERSIZE / 2 + "px";
-  drawsurface.style.border = "thick solid #0000FF"; //The border is mainly for debugging; okay to remove it
+  //The border is mainly for debugging; okay to remove it
+  drawsurface.style.border = "thick solid #0000FF";
   drawsurface.innerHTML = ""; //This empties the contents of the drawing surface, like jQuery erase().
 
   // Compute the cellWidth and cellHeight, given the size of the drawing surface
@@ -114,8 +136,10 @@ function redrawWindow() {
   // In other functions we will access the drawing surface using the d3 library.
   //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
   surface = d3.select("#surface");
-  surface.selectAll("*").remove(); // we added this because setting the inner html to blank may not remove all svg elements
+  // we added this because setting the inner html to blank may not remove all svg elements
+  surface.selectAll("*").remove();
   surface.style("font-size", "100%");
+
   // rebuild contents of the drawing surface
   updateSurface();
 }
@@ -124,8 +148,9 @@ function redrawWindow() {
 function getLocationCell(location) {
   var row = location.row;
   var col = location.col;
-  var x = (col - 1) * cellWidth; //cellWidth is set in the redrawWindow function
-  var y = (row - 1) * cellHeight; //cellHeight is set in the redrawWindow function
+  //cellWidth and cellHeight are set in the redrawWindow function
+  var x = (col - 1) * cellWidth;
+  var y = (row - 1) * cellHeight;
   return { x: x, y: y };
 }
 
@@ -182,8 +207,9 @@ function updateSurface() {
     .duration(animationDelay)
     .ease("linear"); // This specifies the speed and type of transition we want.
 
-  // agents will leave the clinic when they have been discharged.
+  // agents will leave the simulation when they have reached their target.
   // That will be handled by a different function: removeDynamicAgents
+
   // Finally, we would like to draw boxes around the different areas of our system. We can use d3 to do that too.
   var allareas = surface.selectAll(".areas").data(areas);
   var newareas = allareas.enter().append("g").attr("class", "areas");
@@ -207,17 +233,14 @@ function updateSurface() {
     })
     .style("stroke", "black")
     .style("stroke-width", 1);
+
+  // We also add some labels for these areas
 }
 
 function addDynamicAgents() {
-  // agents are dynamic agents: they enter the clinic, wait, get treated, and then leave
-  // We have entering agents of two types "A" and "B"
-  // We could specify their probabilities of arrival in any simulation step separately
-  // Or we could specify a probability of arrival of all agents and then specify the probability of a Type A arrival.
-  // We have done the latter. probArrival is probability of arrival a agent and probTypeA is the probability of a type A agent who arrives.
-  // First see if a agent arrives in this sim step.
-  if (Math.random() < probArrival) {
-    console.log("new agent");
+  // agents are dynamic agents: they enter the simulation, move, and then leave
+  // currently simple criteria is set to spawn an agent every 15 timesteps
+  if (currentTime % 15 == 0) {
     var newagent = {
       location: { row: startRow, col: startCol },
       target: { row: waypointRow, col: waypointCol },
@@ -244,7 +267,10 @@ function updateAgent(agentIndex) {
   switch (state) {
     case MOVING:
       if (hasArrived) {
+        // when the agent arrives at its target
+        // we update the state
         agent.state = WAYPOINT;
+        // as well as update the new target
         agent.target.row = endRow;
         agent.target.col = endCol;
       }
@@ -252,6 +278,8 @@ function updateAgent(agentIndex) {
     case WAYPOINT:
       if (hasArrived) {
         agent.state = EXITED;
+        // in this case we do not update a target
+        // since we want the agent to leave
       }
       break;
     default:
@@ -276,7 +304,7 @@ function updateAgent(agentIndex) {
 }
 
 function removeDynamicAgents() {
-  // We need to remove agents who have been discharged.
+  // We need to remove agents who have reached the destination
   //Select all svg elements of class "agent" and map it to the data list called agents
   var allagents = surface.selectAll(".agent").data(agents);
   //Select all the svg groups of class "agent" whose state is EXITED

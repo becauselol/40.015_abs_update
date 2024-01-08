@@ -19,16 +19,18 @@ var startCol = 10;
 var endRow = 10;
 var endCol = 30;
 
-//a patient enters the hospital UNTREATED; he or she then is QUEUEING to be treated by a doctor;
-// then INTREATMENT with the doctor; then TREATED;
-// When the patient is DISCHARGED he or she leaves the clinic immediately at that point.
+//a agent enters the simulation MOVING; 
+// the agent then moves until it reaches its destination. It is then EXITED
+// When the agent is EXITED he or she leaves the simulation immediately at that point.
 const MOVING = 0;
 const EXITED = 1;
 
 // agents is a dynamic list, initially empty
 var agents = [];
 
-// We can section our screen into different areas. In this model, the waiting area and the staging area are separate.
+// We can section our screen into different areas. 
+// We have specified two areas for visualization
+// A Start Area and a End Area
 var areas = [
   {
     label: "Start Area",
@@ -48,11 +50,12 @@ var areas = [
   },
 ];
 
+// We define some simulation specific variables 
+// currentTime keeps track of the simulation time
 var currentTime = 0;
-var probArrival = 0.5;
 
 // This next function is executed when the script is loaded. It contains the page initialization code.
-(function () {
+(function() {
   // Your page initialization code goes here
   // All elements of the DOM will be available here
   window.addEventListener("resize", redrawWindow); //Redraw whenever the window is resized
@@ -63,7 +66,7 @@ var probArrival = 0.5;
 // We need a function to start and pause the the simulation.
 function toggleSimStep() {
   //this function is called by a click event on the html page.
-  // Search BasicAgentModel.html to find where it is called.
+  // Search EasyAgentModel.html to find where it is called.
   isRunning = !isRunning;
   console.log("isRunning: " + isRunning);
 }
@@ -72,7 +75,8 @@ function redrawWindow() {
   isRunning = false; // used by simStep
   window.clearInterval(simTimer); // clear the Timer
   animationDelay = 550 - document.getElementById("slider1").value;
-  simTimer = window.setInterval(simStep, animationDelay); // call the function simStep every animationDelay milliseconds
+  // call the function simStep every animationDelay milliseconds
+  simTimer = window.setInterval(simStep, animationDelay);
 
   // Re-initialize simulation variables
   currentTime = 0;
@@ -91,7 +95,8 @@ function redrawWindow() {
   drawsurface.style.height = surfaceHeight + "px";
   drawsurface.style.left = WINDOWBORDERSIZE / 2 + "px";
   drawsurface.style.top = WINDOWBORDERSIZE / 2 + "px";
-  drawsurface.style.border = "thick solid #0000FF"; //The border is mainly for debugging; okay to remove it
+  //The border is mainly for debugging; okay to remove it
+  drawsurface.style.border = "thick solid #0000FF";
   drawsurface.innerHTML = ""; //This empties the contents of the drawing surface, like jQuery erase().
 
   // Compute the cellWidth and cellHeight, given the size of the drawing surface
@@ -103,8 +108,10 @@ function redrawWindow() {
   // In other functions we will access the drawing surface using the d3 library.
   //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
   surface = d3.select("#surface");
-  surface.selectAll("*").remove(); // we added this because setting the inner html to blank may not remove all svg elements
+  // we added this because setting the inner html to blank may not remove all svg elements
+  surface.selectAll("*").remove();
   surface.style("font-size", "100%");
+
   // rebuild contents of the drawing surface
   updateSurface();
 }
@@ -113,8 +120,9 @@ function redrawWindow() {
 function getLocationCell(location) {
   var row = location.row;
   var col = location.col;
-  var x = (col - 1) * cellWidth; //cellWidth is set in the redrawWindow function
-  var y = (row - 1) * cellHeight; //cellHeight is set in the redrawWindow function
+  //cellWidth and cellHeight are set in the redrawWindow function
+  var x = (col - 1) * cellWidth;
+  var y = (row - 1) * cellHeight;
   return { x: x, y: y };
 }
 
@@ -122,27 +130,27 @@ function updateSurface() {
   // This function is used to create or update most of the svg elements on the drawing surface.
   // See the function removeDynamicAgents() for how we remove svg elements
 
-  //Select all svg elements of class "patient" and map it to the data list called patients
+  //Select all svg elements of class "agent" and map it to the data list called agents
   var allagents = surface.selectAll(".agent").data(agents);
 
   // If the list of svg elements is longer than the data list, the excess elements are in the .exit() list
   // Excess elements need to be removed:
   allagents.exit().remove(); //remove all svg elements associated with entries that are no longer in the data list
-  // (This remove function is needed when we resize the window and re-initialize the patients array)
+  // (This remove function is needed when we resize the window and re-initialize the agents array)
 
   // If the list of svg elements is shorter than the data list, the new elements are in the .enter() list.
   // The first time this is called, all the elements of data will be in the .enter() list.
-  // Create an svg group ("g") for each new entry in the data list; give it class "patient"
+  // Create an svg group ("g") for each new entry in the data list; give it class "agent"
   var newagents = allagents.enter().append("g").attr("class", "agent");
-  //Append an image element to each new patient svg group, position it according to the location data, and size it to fill a cell
-  // Also note that we can choose a different image to represent the patient based on the patient type
+  //Append an image element to each new agent svg group, position it according to the location data, and size it to fill a cell
+  // Also note that we can choose a different image to represent the agent based on the agent type
   newagents
     .append("svg:image")
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       var cell = getLocationCell(d.location);
       return cell.x + "px";
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       var cell = getLocationCell(d.location);
       return cell.y + "px";
     })
@@ -150,63 +158,61 @@ function updateSurface() {
     .attr("height", Math.min(cellWidth, cellHeight) + "px")
     .attr("xlink:href", urlAgent);
 
-  // For the existing patients, we want to update their location on the screen
+  // For the existing agents, we want to update their location on the screen
   // but we would like to do it with a smooth transition from their previous position.
   // D3 provides a very nice transition function allowing us to animate transformations of our svg elements.
 
-  //First, we select the image elements in the allpatients list
+  //First, we select the image elements in the allagents list
   var images = allagents.selectAll("image");
   // Next we define a transition for each of these image elements.
   // Note that we only need to update the attributes of the image element which change
   images
     .transition()
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       var cell = getLocationCell(d.location);
       return cell.x + "px";
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       var cell = getLocationCell(d.location);
       return cell.y + "px";
     })
     .duration(animationDelay)
     .ease("linear"); // This specifies the speed and type of transition we want.
 
-  // Patients will leave the clinic when they have been discharged.
+  // agents will leave the simulation when they have reached their target.
   // That will be handled by a different function: removeDynamicAgents
+
   // Finally, we would like to draw boxes around the different areas of our system. We can use d3 to do that too.
   var allareas = surface.selectAll(".areas").data(areas);
   var newareas = allareas.enter().append("g").attr("class", "areas");
   // For each new area, append a rectangle to the group
   newareas
     .append("rect")
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       return (d.startCol - 1) * cellWidth;
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       return (d.startRow - 1) * cellHeight;
     })
-    .attr("width", function (d) {
+    .attr("width", function(d) {
       return d.numCols * cellWidth;
     })
-    .attr("height", function (d) {
+    .attr("height", function(d) {
       return d.numRows * cellWidth;
     })
-    .style("fill", function (d) {
+    .style("fill", function(d) {
       return d.color;
     })
     .style("stroke", "black")
     .style("stroke-width", 1);
+
+  // We also add some labels for these areas
 }
 
 function addDynamicAgents() {
-  // Patients are dynamic agents: they enter the clinic, wait, get treated, and then leave
-  // We have entering patients of two types "A" and "B"
-  // We could specify their probabilities of arrival in any simulation step separately
-  // Or we could specify a probability of arrival of all patients and then specify the probability of a Type A arrival.
-  // We have done the latter. probArrival is probability of arrival a patient and probTypeA is the probability of a type A patient who arrives.
-  // First see if a patient arrives in this sim step.
-  if (Math.random() < probArrival) {
-    console.log("new agent");
+  // agents are dynamic agents: they enter the simulation, move, and then leave
+  // currently simple criteria is set to spawn an agent every 15 timesteps
+  if (currentTime % 15 == 0) {
     var newagent = {
       location: { row: startRow, col: startCol },
       target: { row: endRow, col: endCol },
@@ -217,19 +223,19 @@ function addDynamicAgents() {
 }
 
 function updateAgent(agentIndex) {
-  //patientIndex is an index into the patients data array
-  agentIndex = Number(agentIndex); //it seems patientIndex was coming in as a string
+  //agentIndex is an index into the agents data array
+  agentIndex = Number(agentIndex); //it seems agentIndex was coming in as a string
   var agent = agents[agentIndex];
-  // get the current location of the patient
+  // get the current location of the agent
   var row = agent.location.row;
   var col = agent.location.col;
   var state = agent.state;
 
-  // determine if patient has arrived at destination
+  // determine if agent has arrived at destination
   var hasArrived =
     Math.abs(agent.target.row - row) + Math.abs(agent.target.col - col) == 0;
 
-  // Behavior of patient depends on his or her state
+  // Behavior of agent depends on his or her state
   switch (state) {
     case MOVING:
       if (hasArrived) {
@@ -253,28 +259,28 @@ function updateAgent(agentIndex) {
     row + Math.min(Math.abs(rowsToGo), cellsPerStep) * Math.sign(rowsToGo);
   var newCol =
     col + Math.min(Math.abs(colsToGo), cellsPerStep) * Math.sign(colsToGo);
-  // update the location of the patient
+  // update the location of the agent
   agent.location.row = newRow;
   agent.location.col = newCol;
 }
 
 function removeDynamicAgents() {
-  // We need to remove patients who have been discharged.
-  //Select all svg elements of class "patient" and map it to the data list called patients
+  // We need to remove agents who have reached the destination
+  //Select all svg elements of class "agent" and map it to the data list called agents
   var allagents = surface.selectAll(".agent").data(agents);
-  //Select all the svg groups of class "patient" whose state is EXITED
-  var exitedagents = allagents.filter(function (d) {
+  //Select all the svg groups of class "agent" whose state is EXITED
+  var exitedagents = allagents.filter(function(d) {
     return d.state == EXITED;
   });
-  // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
+  // Remove the svg groups of EXITED agents: they will disappear from the screen at this point
   exitedagents.remove();
 
-  // Remove the EXITED patients from the patients list using a filter command
-  agents = agents.filter(function (d) {
+  // Remove the EXITED agents from the agents list using a filter command
+  agents = agents.filter(function(d) {
     return d.state != EXITED;
   });
-  // At this point the patients list should match the images on the screen one for one
-  // and no patients should have state EXITED
+  // At this point the agents list should match the images on the screen one for one
+  // and no agents should have state EXITED
 }
 
 function updateDynamicAgents() {
