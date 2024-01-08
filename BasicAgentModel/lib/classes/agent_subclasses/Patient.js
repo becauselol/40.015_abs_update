@@ -45,11 +45,41 @@ class Patient extends Agent {
     return this.state == PatientState.EXITED;
   }
 
+  static init(simulation) {
+    simulation.patients = [];
+  }
+
+  static resetSim(simulation) {
+    Patient.init(simulation);
+    Patient.resetQueue();
+  }
+
   static resetQueue() {
     Patient.nextID_A = 0; // increment this and assign it to the next entering patient of type A
     Patient.nextID_B = 0; // increment this and assign it to the next entering patient of type B
     Patient.nextTreatedID_A = 1; //this is the id of the next patient of type A to be treated by the doctor
     Patient.nextTreatedID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
+  }
+
+  static remove(simulation) {
+    // We need to remove patients who have been discharged.
+    //Select all svg elements of class "patient" and map it to the data list called patients
+    var allpatients = simulation.surface
+      .selectAll(".patient")
+      .data(simulation.patients);
+    //Select all the svg groups of class "patient" whose state is EXITED
+    var treatedpatients = allpatients.filter(function (d) {
+      return d.exited();
+    });
+    // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
+    treatedpatients.remove();
+
+    // Remove the EXITED patients from the patients list using a filter command
+    simulation.patients = simulation.patients.filter(function (d) {
+      return d.notExited();
+    });
+    // At this point the patients list should match the images on the screen one for one
+    // and no patients should have state EXITED
   }
 
   static spawn(data, start, target) {
@@ -87,7 +117,7 @@ class Patient extends Agent {
     // determine if this has arrived at destination
     var hasArrived =
       Math.abs(patient.target.row - patient.row) +
-      Math.abs(patient.target.col - patient.col) ==
+        Math.abs(patient.target.col - patient.col) ==
       0;
 
     // Behavior of patient depends on his or her state
@@ -226,7 +256,7 @@ class Patient extends Agent {
       .attr("y", getCellY)
       .attr("width", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
       .attr("height", Math.min(Drawable.cellWidth, Drawable.cellHeight) + "px")
-      .attr("xlink:href", function(d) {
+      .attr("xlink:href", function (d) {
         if (d.type == "A") return Patient.urlPatientA;
         else return Patient.urlPatientB;
       });

@@ -15,6 +15,26 @@ class Statistic extends Drawable {
     this.count++;
   }
 
+  static init(simulation) {
+    simulation.statistics = [
+      new Statistic(
+        "Average time in clinic, Type A: ",
+        Caregiver.doctorRow + 3,
+        Caregiver.doctorCol - 4,
+      ),
+      new Statistic(
+        "Average time in clinic, Type B: ",
+        Caregiver.doctorRow + 4,
+        Caregiver.doctorCol - 4,
+      ),
+    ];
+  }
+
+  static resetSim(simulation) {
+    for (var statistic of simulation.statistics) {
+      statistic.reset();
+    }
+  }
   static draw(surface, data) {
     // The simulation should serve some purpose
     // so we will compute and display the average length of stay of each patient type.

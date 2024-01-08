@@ -10,7 +10,14 @@ var w = window.innerWidth;
 var h = window.innerHeight;
 var animationDelay = 550 - document.getElementById("slider1").value;
 
-const sim = new Simulation("simulation", drawsurface, creditselement, w, h, animationDelay);
+const sim = new Simulation(
+  "simulation",
+  drawsurface,
+  creditselement,
+  w,
+  h,
+  animationDelay,
+);
 
 // We need a function to start and pause the the simulation.
 function toggleSimStep() {

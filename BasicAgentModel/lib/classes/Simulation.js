@@ -1,58 +1,21 @@
 var WINDOWBORDERSIZE = 10;
 
 class Simulation {
-
-  static doctorRow = 10;
-  static doctorCol = 20;
-  static receptionistRow = 1;
-  static receptionistCol = 20;
-
   //The drawing surface will be divided into logical cells
   static maxCols = 40;
 
   constructor(name, drawsurface, creditselement, w, h, animationDelay) {
     this.name = name;
     this.currentTime = 0;
-    this.patients = [];
 
-
-    this.doctor = new Caregiver("Doctor", Simulation.doctorRow, Simulation.doctorCol);
-    this.receptionist = new Caregiver(
-      "Receptionist",
-      Simulation.receptionistRow,
-      Simulation.receptionistCol,
-    );
-
-    this.caregivers = [this.doctor, this.receptionist];
-
-    this.statistics = [
-      new Statistic(
-        "Average time in clinic, Type A: ",
-        Simulation.doctorRow + 3,
-        Simulation.doctorCol - 4,
-      ),
-      new Statistic(
-        "Average time in clinic, Type B: ",
-        Simulation.doctorRow + 4,
-        Simulation.doctorCol - 4,
-      ),
-    ];
-
-    this.waitingRoom = new Area("Waiting Area", 5, 5, 15, 11, "pink");
-    this.stagingArea = new Area(
-      "Staging Area",
-      Simulation.doctorRow - 1,
-      1,
-      Simulation.doctorCol - 2,
-      5,
-      "red",
-    );
-    this.areas = [this.waitingRoom, this.stagingArea];
+    Patient.init(this);
+    Caregiver.init(this);
+    Statistic.init(this);
+    Area.init(this);
 
     this.isRunning = false; // used in simStep and toggleSimStep
     this.surface; // Set in the redrawWindow function. It is the D3 selection of the svg drawing surface
     this.simTimer; // Set in the initialization function
-
 
     // Simulation specific
 
@@ -60,16 +23,11 @@ class Simulation {
   }
 
   initializeSim(drawsurface, creditselement, w, h, animationDelay) {
-    Patient.resetQueue()
-
     this.currentTime = 0;
-    this.doctor.state = DoctorState.IDLE;
 
-    for (var statistic of this.statistics) {
-      statistic.reset();
-    }
-
-    this.patients = [];
+    Patient.resetSim(this);
+    Caregiver.resetSim(this);
+    Statistic.resetSim(this);
 
     //resize the drawing surface; remove all its contents;
     var surfaceWidth = w - 3 * WINDOWBORDERSIZE;
@@ -89,7 +47,7 @@ class Simulation {
     var numRows = Math.ceil(surfaceHeight / Drawable.cellWidth);
     Drawable.cellHeight = surfaceHeight / numRows;
 
-    Drawable.animationDelay = animationDelay
+    Drawable.animationDelay = animationDelay;
 
     // In other functions we will access the drawing surface using the d3 library.
     //Here we set the global variable, surface, equal to the d3 selection of the drawing surface
@@ -104,7 +62,7 @@ class Simulation {
     Patient.spawn(
       this.patients,
       { row: 1, col: 1 },
-      { row: Simulation.receptionistRow, col: Simulation.receptionistCol },
+      { row: Caregiver.receptionistRow, col: Caregiver.receptionistCol },
     );
   }
 
@@ -124,22 +82,7 @@ class Simulation {
   }
 
   removeDynamicAgents() {
-    // We need to remove patients who have been discharged.
-    //Select all svg elements of class "patient" and map it to the data list called patients
-    var allpatients = this.surface.selectAll(".patient").data(this.patients);
-    //Select all the svg groups of class "patient" whose state is EXITED
-    var treatedpatients = allpatients.filter(function(d) {
-      return d.exited();
-    });
-    // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
-    treatedpatients.remove();
-
-    // Remove the EXITED patients from the patients list using a filter command
-    this.patients = this.patients.filter(function(d) {
-      return d.notExited();
-    });
-    // At this point the patients list should match the images on the screen one for one
-    // and no patients should have state EXITED
+    Patient.remove(this);
   }
 
   drawSim() {
