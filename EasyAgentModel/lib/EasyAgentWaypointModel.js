@@ -235,6 +235,18 @@ function updateSurface() {
     .style("stroke-width", 1);
 
   // We also add some labels for these areas
+  newareas
+    .append("text")
+    .attr("x", function(d) {
+      return (d.startCol - 1) * cellWidth;
+    })
+    .attr("y", function(d) {
+      return (d.startRow - 1.5) * cellHeight;
+    })
+    .attr("dy", ".35em")
+    .text(function(d) {
+      return d.label;
+    });
 }
 
 function addDynamicAgents() {

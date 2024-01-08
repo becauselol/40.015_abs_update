@@ -207,12 +207,25 @@ function updateSurface() {
     .style("stroke-width", 1);
 
   // We also add some labels for these areas
+  newareas
+    .append("text")
+    .attr("x", function(d) {
+      return (d.startCol - 1) * cellWidth;
+    })
+    .attr("y", function(d) {
+      return (d.startRow - 1.5) * cellHeight;
+    })
+    .attr("dy", ".35em")
+    .text(function(d) {
+      return d.label;
+    });
 }
 
 function addDynamicAgents() {
   // agents are dynamic agents: they enter the simulation, move, and then leave
   // currently simple criteria is set to spawn an agent every 15 timesteps
   if (currentTime % 15 == 0) {
+    console.log("new agent");
     var newagent = {
       location: { row: startRow, col: startCol },
       target: { row: endRow, col: endCol },
