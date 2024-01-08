@@ -118,7 +118,7 @@ var nextTreatedPatientID_A = 1; //this is the id of the next patient of type A t
 var nextTreatedPatientID_B = 1; //this is the id of the next patient of type B to be treated by the doctor
 
 // This next function is executed when the script is loaded. It contains the page initialization code.
-(function () {
+(function() {
   // Your page initialization code goes here
   // All elements of the DOM will be available here
   window.addEventListener("resize", redrawWindow); //Redraw whenever the window is resized
@@ -213,17 +213,17 @@ function updateSurface() {
   // Also note that we can choose a different image to represent the patient based on the patient type
   newpatients
     .append("svg:image")
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       var cell = getLocationCell(d.location);
       return cell.x + "px";
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       var cell = getLocationCell(d.location);
       return cell.y + "px";
     })
     .attr("width", Math.min(cellWidth, cellHeight) + "px")
     .attr("height", Math.min(cellWidth, cellHeight) + "px")
-    .attr("xlink:href", function (d) {
+    .attr("xlink:href", function(d) {
       if (d.type == "A") return urlPatientA;
       else return urlPatientB;
     });
@@ -238,11 +238,11 @@ function updateSurface() {
   // Note that we only need to update the attributes of the image element which change
   images
     .transition()
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       var cell = getLocationCell(d.location);
       return cell.x + "px";
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       var cell = getLocationCell(d.location);
       return cell.y + "px";
     })
@@ -263,17 +263,17 @@ function updateSurface() {
     .attr("class", "caregiver");
   newcaregivers
     .append("svg:image")
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       var cell = getLocationCell(d.location);
       return cell.x + "px";
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       var cell = getLocationCell(d.location);
       return cell.y + "px";
     })
     .attr("width", Math.min(cellWidth, cellHeight) + "px")
     .attr("height", Math.min(cellWidth, cellHeight) + "px")
-    .attr("xlink:href", function (d) {
+    .attr("xlink:href", function(d) {
       if (d.type == DOCTOR) return urlDoctor1;
       else return urlReceptionist;
     });
@@ -281,16 +281,16 @@ function updateSurface() {
   // It would be nice to label the caregivers, so we add a text element to each new caregiver group
   newcaregivers
     .append("text")
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       var cell = getLocationCell(d.location);
       return cell.x + cellWidth + "px";
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       var cell = getLocationCell(d.location);
       return cell.y + cellHeight / 2 + "px";
     })
     .attr("dy", ".35em")
-    .text(function (d) {
+    .text(function(d) {
       return d.label;
     });
 
@@ -306,11 +306,11 @@ function updateSurface() {
   // For each new statistic group created we append a text label
   newstatistics
     .append("text")
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       var cell = getLocationCell(d.location);
       return cell.x + cellWidth + "px";
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       var cell = getLocationCell(d.location);
       return cell.y + cellHeight / 2 + "px";
     })
@@ -319,7 +319,7 @@ function updateSurface() {
 
   // The data in the statistics array are always being updated.
   // So, here we update the text in the labels with the updated information.
-  allstatistics.selectAll("text").text(function (d) {
+  allstatistics.selectAll("text").text(function(d) {
     var avgLengthOfStay = d.cumulativeValue / Math.max(1, d.count); // cumulativeValue and count for each statistic are always changing
     return d.name + avgLengthOfStay.toFixed(1);
   }); //The toFixed() function sets the number of decimal places to display
@@ -330,19 +330,19 @@ function updateSurface() {
   // For each new area, append a rectangle to the group
   newareas
     .append("rect")
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       return (d.startCol - 1) * cellWidth;
     })
-    .attr("y", function (d) {
+    .attr("y", function(d) {
       return (d.startRow - 1) * cellHeight;
     })
-    .attr("width", function (d) {
+    .attr("width", function(d) {
       return d.numCols * cellWidth;
     })
-    .attr("height", function (d) {
+    .attr("height", function(d) {
       return d.numRows * cellWidth;
     })
-    .style("fill", function (d) {
+    .style("fill", function(d) {
       return d.color;
     })
     .style("stroke", "black")
@@ -503,14 +503,14 @@ function removeDynamicAgents() {
   //Select all svg elements of class "patient" and map it to the data list called patients
   var allpatients = surface.selectAll(".patient").data(patients);
   //Select all the svg groups of class "patient" whose state is EXITED
-  var treatedpatients = allpatients.filter(function (d, i) {
+  var treatedpatients = allpatients.filter(function(d, i) {
     return d.state == EXITED;
   });
   // Remove the svg groups of EXITED patients: they will disappear from the screen at this point
   treatedpatients.remove();
 
   // Remove the EXITED patients from the patients list using a filter command
-  patients = patients.filter(function (d) {
+  patients = patients.filter(function(d) {
     return d.state != EXITED;
   });
   // At this point the patients list should match the images on the screen one for one

@@ -28,6 +28,7 @@ function redrawWindow() {
   w = window.innerWidth;
   h = window.innerHeight;
   animationDelay = 550 - document.getElementById("slider1").value;
+
   sim.redrawSim(drawsurface, creditselement, w, h, animationDelay);
 
   simTimer = window.setInterval(simStep, Drawable.animationDelay);
